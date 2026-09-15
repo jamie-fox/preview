@@ -1,0 +1,1982 @@
+<!DOCTYPE html>
+<html lang="en-GB" class="arc3-pbx">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Photobox — Thoughtful Gifting V3 (concept prototype)</title>
+<!-- Google Material Symbols (icon font) — same source as jtbd-photo-books-v2's
+     pills, so every icon renders at a genuinely uniform outline weight
+     (FILL axis pinned to 0) instead of per-icon inline-SVG inconsistencies. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,400,0,0&display=swap">
+<link rel="stylesheet" href="css/styles.css?v=244">
+<link rel="stylesheet" href="https://arc3.sf.albelli.com/dist/cdn/arc.css">
+<script defer src="https://arc3.sf.albelli.com/dist/cdn/arc.bundle.js"></script>
+<style>
+  /* ===== Nav breakpoints =====
+     Mobile  : ≤574px  — ARC-3 native mobile; no layout overrides needed here.
+     Tablet  : 575–808px — ARC-3 treats this as desktop; we override to match Mobile.
+     Desktop : ≥809px  — ARC-3 desktop nav; no overrides needed.
+     Rules are split into two zones because ARC-3's own mobile breakpoint is ~574px:
+     A) ≤808px (Mobile + Tablet) — drawer show/hide, needed across the full range.
+     B) 575–808px (Tablet only)  — layout/sizing ARC-3 already handles below 575px. */
+
+  /* ── Zone A: Mobile + Tablet (≤808px) ── */
+  @media (max-width: 808px) {
+    .arc3-menu__bar__mobile-btn { display: inline-flex !important; }
+    /* styles.css hides this with !important — re-show it */
+    .arc3-menu__bar__nav { display: flex !important; align-items: center !important; height: 56px !important; }
+    /* Icon-only layout across the full mobile range: li items must be
+       inline-flex (not list-item) so they size and centre correctly as
+       flex children. a fills the li; icons are centred inside. */
+    .arc3-menu__bar__nav > li.arc3-hide-for-small { display: none !important; }
+    .arc3-menu__bar__nav > li > a > span           { display: none !important; }
+    .arc3-menu__bar__nav > li {
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      border: none !important;
+      width: 48px !important;
+      height: 48px !important;
+      padding: 0 !important;
+    }
+    .arc3-menu__bar__nav > li > a {
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      border: none !important;
+      width: 100% !important;
+      height: 100% !important;
+      padding: 0 !important;
+    }
+    .arc3-menu__bar__nav i.arc3-icon {
+      font-size: 26.67px !important;
+      height: 32px !important;
+      width: 32px !important;
+    }
+
+    /* Hide the category drawer by default; JS reveals it via body class */
+    .arc3-menu__main { position: relative !important; }
+    .arc3-menu__main,
+    .arc3-menu__main__nav-container,
+    #main-menu { display: none !important; }
+
+    body.nav-drawer-open .arc3-menu__main,
+    body.nav-drawer-open .arc3-menu__main__nav-container,
+    body.nav-drawer-open #main-menu { display: block !important; }
+
+    /* Prevent ARC-3 desktop :hover dropdowns from firing inside the drawer */
+    body.nav-drawer-open .arc3-menu__main__nav .arc3-menu__dropdown-content { display: none !important; }
+    body.nav-drawer-open .arc3-menu input.arc3-menu-toggle:checked.sub-menu ~ ul.arc3-menu__dropdown-content { display: block !important; }
+
+    /* ARC-3 hides .arc3-hide-for-medium-up at ≥575px — un-hide chevrons in the drawer */
+    body.nav-drawer-open .arc3-menu__main__nav .chevron { display: block !important; }
+    /* Restore item dividers (ARC-3 desktop removes border-bottom on nav li) */
+    body.nav-drawer-open .arc3-menu__main__nav > li { display: list-item !important; margin-left: 0 !important; margin-right: 0 !important; border-bottom: 1px solid var(--functional-colours-grey-100) !important; }
+    body.nav-drawer-open .arc3-menu__main__nav > li > a.arc3-menu__main__nav__button { height: 48px !important; }
+    body.nav-drawer-open .arc3-menu__main__nav > li:has(input.arc3-menu-toggle:checked.sub-menu) { border-bottom-color: transparent !important; }
+    body.nav-drawer-open .arc3-menu__main__nav > li:last-child { border-bottom: none !important; }
+    body.nav-drawer-open #main-menu {
+      position: fixed !important;
+      top: var(--nav-bar-height, 56px) !important;
+      margin-top: 0 !important;
+      left: 0 !important;
+      width: 100% !important;
+      max-height: calc(100vh - var(--nav-bar-height, 56px)) !important;
+      overflow-y: auto !important;
+      z-index: 20 !important;
+      background: #fff !important;
+      box-sizing: border-box !important;
+    }
+  }
+
+  /* ── Zone B: Tablet only (575–808px) — ARC-3 uses desktop layout here; apply
+     mobile sizing so the bar matches Mobile (≤574px) ── */
+  @media (min-width: 575px) and (max-width: 808px) {
+    .arc3-menu__bar {
+      position: relative !important;
+      height: 56px !important;
+    }
+    /* .arc3-container, not .arc3-menu__bar, is the actual flex parent of
+       the mobile-btn/logo/nav — its default align-items:stretch is why
+       fixed-height children (the 40px logo) were rendering top-aligned. */
+    .arc3-menu__bar .arc3-container {
+      display: flex !important;
+      justify-content: center !important;
+      align-items: center !important;
+      height: 100% !important;
+    }
+    .arc3-menu__bar__mobile-btn {
+      position: absolute !important;
+      margin: 0 !important;
+      left: 8px !important;
+      top: 9px !important;
+      transform: none !important;
+    }
+    .arc3-menu__bar__logo {
+      height: 40px !important;
+      padding: 0 !important;
+    }
+    .arc3-menu__bar__logo .arc3-logo-photobox,
+    .arc3-menu__bar__logo .arc3-logo-albelli,
+    .arc3-menu__bar__logo .arc3-logo-hofmann {
+      height: 40px !important;
+      width: 141px !important;
+    }
+    .arc3-menu__bar__nav {
+      display: flex !important;
+      align-items: center !important;
+      position: absolute !important;
+      right: 0 !important;
+      top: 0 !important;
+      height: 56px !important;
+    }
+    /* Match mobile line-height: 56px to eliminate 0.5px subpixel shift in icon position */
+    .arc3-menu__bar__nav > li > a { line-height: 56px !important; }
+    /* Suppress desktop hover on bar-nav icons */
+    .arc3-menu__bar__nav li.arc3-menu__dropdown:hover > .arc3-menu__dropdown-content { display: none !important; }
+    /* arc3-hide-for-medium-up hides this checkbox at ≥575px — un-hide so click works */
+    input.arc3-menu-toggle.account-menu { display: block !important; }
+    /* Show account dropdown full-width below the nav bar, matching Mobile */
+    input.arc3-menu-toggle.account-menu:checked ~ .arc3-menu__bar #account-menu {
+      display: block !important;
+      position: fixed !important;
+      top: 56px !important;
+      left: 0 !important;
+      right: 0 !important;
+      width: 100% !important;
+      background: #fff !important;
+      z-index: 20 !important;
+      padding: 0 !important;
+      border-radius: 0 !important;
+      box-shadow: none !important;
+      border: none !important;
+    }
+    /* Reset desktop left-aligned styles; match Mobile centered layout */
+    #account-menu li {
+      text-align: center !important;
+      padding: 16px 0 !important;
+      border: none !important;
+      border-bottom: 1px solid #eee !important;
+    }
+    #account-menu a { text-align: center !important; padding: 0 !important; }
+    /* Un-hide arc3-hide-for-medium-up items (e.g. Customer Service) inside account menu */
+    #account-menu .arc3-hide-for-medium-up { display: list-item !important; }
+  }
+
+  /* ── Desktop (≥809px) ── */
+  @media (min-width: 809px) {
+    .arc3-menu__bar__mobile-btn { display: none !important; }
+    .arc3-menu__bar__nav { display: flex !important; }
+  }
+  /* ===== Desktop nav spacing ===== */
+  @media (min-width: 575px) {
+    .arc3-menu__main__nav > li { margin: 0 12px; }
+    .arc3-menu__main__nav > li:first-child { margin-left: 0; }
+    .arc3-menu__main__nav > li:last-child { margin-right: 0; }
+    .arc3-menu__main__nav__button { padding-top: 8px; }
+  }
+  @media (min-width: 575px) {
+    .arc3-menu__main__nav .arc3-menu__dropdown-content { padding: 12px 0; }
+    .arc3-menu__main__nav .arc3-menu__dropdown-content a { margin: 0 20px; }
+  }
+  /* ===== Gifts mega-menu ===== */
+  .gifts-mega { white-space: nowrap; }
+  .gifts-mega > .gifts-mega__col {
+    display: table-cell;
+    vertical-align: top;
+    padding-right: 8px;
+  }
+  .gifts-mega > .gifts-mega__col + .gifts-mega__col {
+    border-left: 1px solid var(--functional-colours-grey-200);
+    padding-left: 8px;
+  }
+  .gifts-mega__heading {
+    display: block;
+    padding: 8px 0;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    color: var(--functional-colours-grey-700);
+  }
+  @media (min-width: 575px) {
+    .gifts-mega__heading { margin: 0 20px; }
+  }
+  ul.gifts-mega__view-all {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--functional-colours-grey-200);
+  }
+  ul.gifts-mega__view-all a { text-decoration: none; }
+  .arc3-menu__main__nav .arc3-menu__dropdown-content li.nav-view-all {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--functional-colours-grey-200);
+  }
+  .arc3-menu__main__nav .arc3-menu__dropdown-content li.nav-view-all a { text-decoration: none; }
+  ul.gifts-mega__view-all a:hover,
+  .arc3-menu__main__nav .arc3-menu__dropdown-content li.nav-view-all a:hover,
+  .arc3-menu__main__nav .arc3-menu__dropdown-content li.gifts-top-link a:hover {
+    color: #00595c;
+    text-decoration: underline;
+  }
+  /* ===== Desktop dropdown card ===== */
+  @media (min-width: 575px) {
+    .arc3-menu__dropdown-content {
+      border-radius: 8px;
+      border: 1px solid var(--functional-colours-grey-200);
+    }
+    .arc3-menu__main__nav .arc3-menu__dropdown-content {
+      box-shadow: 0 12px 32px 0 rgba(0,0,0,.08);
+    }
+  }
+  /* ===== Blog / account dropdown (desktop) ===== */
+  @media (min-width: 575px) {
+    #blog-menu a,
+    #account-menu a {
+      font-size: 16px;
+      line-height: 24px;
+      padding: 8px 0;
+      white-space: nowrap;
+      text-align: left;
+    }
+    #blog-menu li,
+    #account-menu li {
+      padding: 0 20px;
+      margin-left: 0;
+      margin-right: 0;
+      border: none;
+      text-align: left;
+    }
+    #blog-menu,
+    #account-menu {
+      width: max-content !important;
+      padding: 12px 0;
+    }
+  }
+  /* ===== Hover-intent close delay (desktop) ===== */
+  @media (min-width: 575px) {
+    .arc3-menu__main__nav .arc3-menu__dropdown.is-open .arc3-menu__dropdown-content {
+      display: block;
+    }
+    .arc3-menu__bar .arc3-menu__dropdown.is-open .arc3-menu__dropdown-content {
+      display: block;
+    }
+    .arc3-menu__bar__nav > li.is-open ul {
+      top: auto;
+      left: auto;
+      min-width: 100%;
+      position: absolute;
+    }
+    .arc3-menu__bar__nav > li.is-open ul li {
+      font-weight: 400;
+    }
+  }
+  /* ===== Mobile (≤574px) ===== */
+  @media (max-width: 800px) {
+    .arc3-menu__bar__nav > li > a { width: 48px; }
+    #account-menu a { font-size: 16px; }
+    .gifts-mega > .gifts-mega__col { display: block; padding-right: 0; }
+    .gifts-mega > .gifts-mega__col + .gifts-mega__col {
+      border-left: none;
+      border-top: 1px solid var(--functional-colours-grey-200);
+      padding-left: 0;
+      padding-top: 16px;
+      margin-top: 16px;
+    }
+    .gifts-mega__heading { margin: 0; padding-left: 20px; }
+    .arc3-menu__main__nav .arc3-menu__dropdown-content li {
+      border-bottom: none;
+      padding: 0;
+    }
+    .arc3-menu__main__nav li .arc3-menu__main__nav__button {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 8px;
+      padding-bottom: 8px;
+      padding-left: 20px;
+      padding-right: 20px;
+      font-size: 16px;
+    }
+    .arc3-menu input.arc3-menu-toggle.sub-menu {
+      left: 0;
+      right: auto;
+      width: 100%;
+    }
+    .chevron {
+      width: 14px;
+      height: 14px;
+      color: var(--functional-colours-grey-700);
+      flex-shrink: 0;
+      transition: transform .2s;
+    }
+    .arc3-menu input.arc3-menu-toggle:checked.sub-menu ~ a .chevron {
+      transform: rotate(180deg);
+    }
+    /* Keyboard focus ring — the checkbox is an invisible overlay; surface the
+       indicator on the visible link text instead. */
+    .arc3-menu input.arc3-menu-toggle.sub-menu:focus-visible ~ a {
+      outline: 2px solid currentColor;
+      outline-offset: -2px;
+      border-radius: 2px;
+    }
+    .arc3-menu__main__nav .arc3-menu__dropdown-content { padding-left: 0; padding-bottom: 0; }
+    .arc3-menu__main__nav .arc3-menu__dropdown-content a { padding: 8px 0 8px 20px; font-size: 16px; }
+    .arc3-menu__main__nav > li {
+      padding: 0;
+      border-bottom-color: var(--functional-colours-grey-100);
+    }
+    .arc3-menu input.arc3-menu-toggle:checked.sub-menu ~ ul {
+      background: var(--functional-colours-grey-25);
+      padding-left: 0;
+      padding-top: 12px;
+      padding-bottom: 12px;
+      margin-left: -16px;
+      margin-right: -16px;
+    }
+    .arc3-menu input.arc3-menu-toggle:checked.sub-menu ~ ul a { padding-left: 36px; font-size: 16px; }
+    .arc3-menu input.arc3-menu-toggle:checked.sub-menu ~ ul .gifts-mega__heading { padding-left: 36px; }
+    .arc3-menu input.arc3-menu-toggle:checked.sub-menu ~ ul ul.gifts-mega__view-all,
+    .arc3-menu input.arc3-menu-toggle:checked.sub-menu ~ ul .gifts-mega__col + .gifts-mega__col,
+    .arc3-menu input.arc3-menu-toggle:checked.sub-menu ~ ul li.gifts-top-link,
+    .arc3-menu input.arc3-menu-toggle:checked.sub-menu ~ ul li.nav-view-all { width: calc(100vw + 16px); }
+    .arc3-menu input.arc3-menu-toggle:checked.sub-menu ~ ul .gifts-mega__col + .gifts-mega__col {
+      margin-top: 0;
+      padding-top: 8px;
+    }
+    .arc3-menu input.arc3-menu-toggle:checked.sub-menu ~ ul ul.gifts-mega__view-all,
+    .arc3-menu input.arc3-menu-toggle:checked.sub-menu ~ ul li.nav-view-all { padding-top: 0; margin-top: 0; }
+    .arc3-menu input.arc3-menu-toggle:checked.sub-menu ~ ul ul.gifts-mega__view-all a,
+    .arc3-menu input.arc3-menu-toggle:checked.sub-menu ~ ul li.nav-view-all a,
+    .arc3-menu input.arc3-menu-toggle:checked.sub-menu ~ ul li.gifts-top-link a {
+      padding-top: 8px;
+      padding-bottom: 8px;
+    }
+    .arc3-menu__main__nav .arc3-menu__dropdown-content li.gifts-top-link {
+      margin-bottom: 8px;
+      border-bottom: 1px solid var(--functional-colours-grey-200);
+    }
+    .arc3-menu__main__nav .arc3-menu__dropdown-content li.gifts-top-link a { text-decoration: none; }
+    .arc3-menu__main__nav > li:has(input.arc3-menu-toggle:checked.sub-menu) {
+      border-bottom-color: transparent;
+    }
+  }
+  /* Override ARC-3 heading colour resets */
+  .heading { color: inherit !important; }
+
+  /* ── Share button & popover ── */
+  .hero-copy { position: relative; }
+  .share-row {
+    margin-top: 32px;
+    position: relative;
+    display: inline-block;
+  }
+  .share-btn {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--arc3-color-text-secondary, #777);
+    font-size: 13px;
+    font-family: inherit;
+    line-height: 1;
+    padding: 0;
+    transition: color 0.15s;
+  }
+  .share-btn:hover { color: var(--arc3-color-primary, #333); }
+
+  .share-popover {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    top: auto;
+    left: 0;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.14);
+    padding: 16px;
+    z-index: 100;
+    min-width: 200px;
+  }
+  .share-popover[hidden] { display: none; }
+
+  .share-popover__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .share-popover__title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #222;
+  }
+  .share-popover__close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #777;
+    padding: 2px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+  }
+  .share-popover__close:hover { color: #222; }
+
+  .share-popover__actions {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+  }
+  .share-popover__action {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+    font-size: 11px;
+    color: #444;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    padding: 0;
+    transition: opacity 0.15s;
+  }
+  .share-popover__action:hover { opacity: 0.75; }
+  .share-popover__action span { white-space: nowrap; }
+  .share-popover__icon-wrap {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #EBEBEB;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+  }
+  .share-popover__action--copy.copied .share-popover__icon-wrap { background: #25D366; color: #fff; }
+  .share-popover__action--copy.copied span { color: #25D366; }
+</style>
+</head>
+<body>
+
+<!-- Stakeholder/dev tool only — NOT part of the customer experience.
+     Links across the frozen version folders (V1 / V2 / …). Wired in js/app.js. -->
+<div class="variant-switcher" id="variant-switcher" role="group" aria-label="Internal prototype controls">
+  <!-- Expanded controls (hidden until the trigger is tapped) -->
+  <div class="proto-panel" id="proto-panel" aria-hidden="true">
+    <div class="proto-head">
+      <span class="vs-flag">⚙ Internal · prototype view</span>
+      <button type="button" class="proto-close" id="proto-close" aria-label="Collapse controls">✕</button>
+    </div>
+    <div class="proto-group">
+      <span class="proto-glabel">Version</span>
+      <div class="ver-switcher" id="version-switcher" role="group" aria-label="Prototype version">
+        <button type="button" class="ver-btn" data-version="v1" data-base="../thoughtful-gifting/">V1<small>baseline</small></button>
+        <button type="button" class="ver-btn" data-version="v2" data-base="../thoughtful-gifting-v2/">V2<small>iteration</small></button>
+        <button type="button" class="ver-btn" data-version="v3" data-base="../thoughtful-gifting-v3/">V3<small>new nav</small></button>
+      </div>
+    </div>
+    <div class="proto-group">
+      <span class="proto-glabel">User testing</span>
+      <button type="button" class="ver-btn proto-copy-btn" id="proto-copy-link">Copy test link</button>
+    </div>
+  </div>
+  <!-- Always-visible compact trigger; summary shows the live version -->
+  <span class="proto-hint" aria-hidden="true">Press H to hide</span>
+  <button type="button" class="proto-toggle" id="proto-toggle" aria-expanded="false" aria-controls="proto-panel" title="Internal prototype controls">
+    <span class="proto-toggle-ic" aria-hidden="true">⚙</span>
+    <span class="proto-summary" id="proto-summary">V2</span>
+    <span class="proto-caret" aria-hidden="true">▾</span>
+  </button>
+</div>
+
+<div class="arc3-menu">
+    <input type="checkbox" id="mobile-nav-toggle" class="arc3-hide-for-medium-up arc3-menu-toggle main-menu" title="Main Menu" />
+    <input type="checkbox" class="arc3-hide-for-medium-up arc3-menu-toggle account-menu" title="Account Menu" />
+    <div class="arc3-menu__bar">
+        <div class="arc3-container">
+            <div class="arc3-menu__bar__mobile-btn arc3-hide-for-medium-up">MENU</div>
+            <a class="arc3-menu__bar__logo" href="https://www.photobox.co.uk/" target="_blank" rel="noopener noreferrer"><div class="arc3-logo-photobox small"></div></a>
+            <ul class="arc3-menu__bar__nav arc3-typo-ul-no-style">
+                <li class="arc3-menu__dropdown arc3-hide-for-small">
+                    <a href="#">Blog</a>
+                    <ul class="arc3-menu__dropdown-content arc3-typo-ul-no-style" id="blog-menu">
+                        <li><a class="link--color-dark-grey" href="#">News</a></li>
+                        <li><a class="link--color-dark-grey" href="#">Creative ideas</a></li>
+                        <li><a class="link--color-dark-grey" href="#">Photography</a></li>
+                        <li><a class="link--color-dark-grey" href="#">Occasions</a></li>
+                        <li><a class="link--color-dark-grey" href="#">Decor</a></li>
+                        <li><a class="link--color-dark-grey" href="#">Featured</a></li>
+                    </ul>
+                </li>
+                <li class="arc3-hide-for-small">
+                    <a href="#" rel="nofollow"><i class="arc3-icon">question_mark_circle</i><span>Customer Service</span></a>
+                </li>
+                <li class="arc3-menu__dropdown">
+                    <a href="#" rel="nofollow"><i class="arc3-icon">profile</i><span>My Account</span></a>
+                    <ul class="arc3-menu__dropdown-content arc3-typo-ul-no-style" id="account-menu">
+                        <li><a class="link--color-dark-grey" href="#" rel="nofollow">Order status</a></li>
+                        <li><a class="link--color-dark-grey" href="#" rel="nofollow">Saved projects</a></li>
+                        <li><a class="link--color-dark-grey" href="#" rel="nofollow">My photos</a></li>
+                        <li class="arc3-hide logout-link"><a class="link--color-dark-grey" href="#" rel="nofollow">Logout</a></li>
+                        <li class="arc3-hide-for-medium-up"><a class="link--color-dark-grey" href="#" rel="nofollow">Customer Service</a></li>
+                    </ul>
+                </li>
+                <li><a href="#" rel="nofollow"><i class="arc3-icon">shopping_cart</i><span>My Basket</span></a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="arc3-container">
+        <div class="arc3-menu__main">
+            <div class="arc3-menu__main__nav-container arc3-cell arc3-cell--10-col-desktop arc3-cell--12-col-tablet">
+                <ul class="arc3-menu__main__nav arc3-typo-ul-no-style" id="main-menu">
+                    <li class="arc3-menu__dropdown">
+                        <input type="checkbox" class="arc3-hide-for-medium-up arc3-menu-toggle sub-menu js-accordion-toggle" />
+                        <a href="https://www.photobox.co.uk/photo-books" target="_blank" rel="noopener noreferrer" class="arc3-menu__main__nav__button link--color-dark-grey">Photo Books<svg class="chevron arc3-hide-for-medium-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 9l7 7 7-7"></path></svg></a>
+                        <ul class="arc3-menu__dropdown-content arc3-typo-ul-no-style">
+                            <li><a class="link--color-dark-grey" href="https://www.photobox.co.uk/photo-books/creator" target="_blank" rel="noopener noreferrer">Create now</a></li>
+                            <li><a class="link--color-dark-grey" href="https://www.photobox.co.uk/photo-books" target="_blank" rel="noopener noreferrer">Photo books</a></li>
+                            <li><a class="link--color-dark-grey" href="https://www.photobox.co.uk/photo-books/templates" target="_blank" rel="noopener noreferrer">Themed photo books</a></li>
+                        </ul>
+                    </li>
+                    <li class="arc3-menu__dropdown">
+                        <input type="checkbox" class="arc3-hide-for-medium-up arc3-menu-toggle sub-menu js-accordion-toggle" />
+                        <a href="https://www.photobox.co.uk/wall-art" target="_blank" rel="noopener noreferrer" class="arc3-menu__main__nav__button link--color-dark-grey">Wall Art<svg class="chevron arc3-hide-for-medium-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 9l7 7 7-7"></path></svg></a>
+                        <ul class="arc3-menu__dropdown-content arc3-typo-ul-no-style">
+                            <li><a class="link--color-dark-grey" href="https://www.photobox.co.uk/wall-art/canvas-prints" target="_blank" rel="noopener noreferrer">Canvas prints</a></li>
+                            <li><a class="link--color-dark-grey" href="https://www.photobox.co.uk/wall-art/poster-printing" target="_blank" rel="noopener noreferrer">Poster printing</a></li>
+                            <li><a class="link--color-dark-grey" href="https://www.photobox.co.uk/wall-art/acrylic-prints" target="_blank" rel="noopener noreferrer">Acrylic prints</a></li>
+                            <li><a class="link--color-dark-grey" href="https://www.photobox.co.uk/wall-art/aluminium-prints" target="_blank" rel="noopener noreferrer">Aluminium prints</a></li>
+                            <li><a class="link--color-dark-grey" href="https://www.photobox.co.uk/wall-art/mounted-prints" target="_blank" rel="noopener noreferrer">Mounted prints</a></li>
+                            <li><a class="link--color-dark-grey" href="https://www.photobox.co.uk/wall-art/photo-collage" target="_blank" rel="noopener noreferrer">Photo collage prints</a></li>
+                            <li><a class="link--color-dark-grey" href="https://www.photobox.co.uk/wall-art#chooseYourFramedProduct" target="_blank" rel="noopener noreferrer">Framed wall art</a></li>
+                            <li class="nav-view-all"><a class="arc3-color-text-secondary arc3-typo--font-bold" href="https://www.photobox.co.uk/wall-art" target="_blank" rel="noopener noreferrer">All wall art</a></li>
+                        </ul>
+                    </li>
+                    <li class="arc3-menu__dropdown">
+                        <input type="checkbox" class="arc3-hide-for-medium-up arc3-menu-toggle sub-menu js-accordion-toggle" />
+                        <a href="https://www.photobox.co.uk/photo-printing" target="_blank" rel="noopener noreferrer" class="arc3-menu__main__nav__button link--color-dark-grey">Photo Printing<svg class="chevron arc3-hide-for-medium-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 9l7 7 7-7"></path></svg></a>
+                        <ul class="arc3-menu__dropdown-content arc3-typo-ul-no-style">
+                            <li><a class="link--color-dark-grey" href="https://www.photobox.co.uk/photo-printing/photo-prints-4x4" target="_blank" rel="noopener noreferrer">Photo prints 4x4"</a></li>
+                            <li><a class="link--color-dark-grey" href="https://www.photobox.co.uk/photo-printing/photo-prints-5-4x4" target="_blank" rel="noopener noreferrer">Photo prints 5.4x4"</a></li>
+                            <li><a class="link--color-dark-grey" href="https://www.photobox.co.uk/photo-printing/photo-prints-6x4" target="_blank" rel="noopener noreferrer">Photo prints 6x4"</a></li>
+                            <li><a class="link--color-dark-grey" href="https://www.photobox.co.uk/photo-printing/large-photo-prints-5x5" target="_blank" rel="noopener noreferrer">Photo prints 5x5"</a></li>
+                            <li><a class="link--color-dark-grey" href="https://www.photobox.co.uk/photo-printing/large-photo-prints-7x5" target="_blank" rel="noopener noreferrer">Photo prints 7x5"</a></li>
+                            <li><a class="link--color-dark-grey" href="https://www.photobox.co.uk/photo-printing/enlargements-7-5x5" target="_blank" rel="noopener noreferrer">Photo enlargements 7.5x5"</a></li>
+                            <li><a class="link--color-dark-grey" href="https://www.photobox.co.uk/photo-printing/enlargements-8x6" target="_blank" rel="noopener noreferrer">Photo enlargements 8x6"</a></li>
+                            <li><a class="link--color-dark-grey" href="https://www.photobox.co.uk/photo-printing/retro-prints-4-8x4" target="_blank" rel="noopener noreferrer">Retro prints 4.8x4"</a></li>
+                            <li><a class="link--color-dark-grey" href="https://www.photobox.co.uk/wall-art/poster-printing" target="_blank" rel="noopener noreferrer">Poster printing</a></li>
+                            <li class="nav-view-all"><a class="arc3-color-text-secondary arc3-typo--font-bold" href="https://www.photobox.co.uk/photo-printing" target="_blank" rel="noopener noreferrer">All photo prints</a></li>
+                        </ul>
+                    </li>
+                    <li class="arc3-menu__dropdown">
+                        <input type="checkbox" class="arc3-hide-for-medium-up arc3-menu-toggle sub-menu js-accordion-toggle" />
+                        <a href="https://www.photobox.co.uk/personalised-gifts" target="_blank" rel="noopener noreferrer" class="arc3-menu__main__nav__button link--color-dark-grey">Gifts<svg class="chevron arc3-hide-for-medium-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 9l7 7 7-7"></path></svg></a>
+                        <ul class="arc3-menu__dropdown-content arc3-typo-ul-no-style gifts-mega">
+                            <li class="arc3-hide-for-medium-up gifts-top-link"><a class="arc3-color-text-secondary arc3-typo--font-bold" href="https://www.photobox.co.uk/personalised-gifts" target="_blank" rel="noopener noreferrer">Gift ideas</a></li>
+                            <li class="gifts-mega__col">
+                                <small class="gifts-mega__heading arc3-typo--text-uppercase arc3-typo--font-bold">Shop by Product</small>
+                                <ul class="arc3-typo-ul-no-style">
+                                    <li><a class="link--color-dark-grey" href="#picker">Mugs</a></li>
+                                    <li><a class="link--color-dark-grey" href="#picker">Jigsaw Puzzle</a></li>
+                                    <li><a class="link--color-dark-grey" href="#picker">Photo blocks</a></li>
+                                    <li><a class="link--color-dark-grey" href="#picker">Photo magnets</a></li>
+                                    <li><a class="link--color-dark-grey" href="#picker">Cushions</a></li>
+                                </ul>
+                                <ul class="arc3-typo-ul-no-style gifts-mega__view-all">
+                                    <li><a class="arc3-color-text-secondary arc3-typo--font-bold" href="#picker">All gifts products</a></li>
+                                </ul>
+                            </li>
+                            <li class="gifts-mega__col">
+                                <small class="gifts-mega__heading arc3-typo--text-uppercase arc3-typo--font-bold">Shop by Recipient</small>
+                                <ul class="arc3-typo-ul-no-style">
+                                    <li><a class="link--color-dark-grey" href="https://www.photobox.co.uk/personalised-gifts/for-her" target="_blank" rel="noopener noreferrer">Gifts for her</a></li>
+                                    <li><a class="link--color-dark-grey" href="https://www.photobox.co.uk/personalised-gifts/for-him" target="_blank" rel="noopener noreferrer">Gifts for him</a></li>
+                                    <li><a class="link--color-dark-grey" href="https://www.photobox.co.uk/personalised-gifts/for-teachers" target="_blank" rel="noopener noreferrer">Gifts for teachers</a></li>
+                                    <li><a class="link--color-dark-grey" href="https://www.photobox.co.uk/personalised-gifts/for-friends" target="_blank" rel="noopener noreferrer">Gifts for friends</a></li>
+                                </ul>
+                            </li>
+                            <li class="gifts-mega__col">
+                                <small class="gifts-mega__heading arc3-typo--text-uppercase arc3-typo--font-bold">Shop by Occasion</small>
+                                <ul class="arc3-typo-ul-no-style">
+                                    <li><a class="link--color-dark-grey" href="https://www.photobox.co.uk/personalised-gifts/birthday" target="_blank" rel="noopener noreferrer">Birthday gifts</a></li>
+                                    <li><a class="link--color-dark-grey" href="https://www.photobox.co.uk/personalised-gifts/wedding" target="_blank" rel="noopener noreferrer">Wedding gifts</a></li>
+                                    <li><a class="link--color-dark-grey" href="https://www.photobox.co.uk/personalised-gifts/baby-gifts" target="_blank" rel="noopener noreferrer">New Baby gifts</a></li>
+                                    <li><a class="link--color-dark-grey" href="https://www.photobox.co.uk/personalised-gifts/anniversary" target="_blank" rel="noopener noreferrer">Anniversary gifts</a></li>
+                                    <li><a class="link--color-dark-grey" href="https://www.photobox.co.uk/personalised-gifts/christmas" target="_blank" rel="noopener noreferrer">Christmas gifts</a></li>
+                                    <li><a class="link--color-dark-grey" href="https://www.photobox.co.uk/communion" target="_blank" rel="noopener noreferrer">Communion gifts</a></li>
+                                    <li><a class="link--color-dark-grey" href="https://www.photobox.co.uk/personalised-gifts/valentines" target="_blank" rel="noopener noreferrer">Valentines Day gifts</a></li>
+                                    <li><a class="link--color-dark-grey" href="https://www.photobox.co.uk/personalised-gifts/mothers-day" target="_blank" rel="noopener noreferrer">Mother's Day gifts</a></li>
+                                    <li><a class="link--color-dark-grey" href="https://www.photobox.co.uk/personalised-gifts/fathers-day" target="_blank" rel="noopener noreferrer">Father's Day gifts</a></li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="arc3-menu__dropdown">
+                        <input type="checkbox" class="arc3-hide-for-medium-up arc3-menu-toggle sub-menu js-accordion-toggle" />
+                        <a href="https://www.photobox.co.uk/personalised-cards" target="_blank" rel="noopener noreferrer" class="arc3-menu__main__nav__button link--color-dark-grey">Cards<svg class="chevron arc3-hide-for-medium-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 9l7 7 7-7"></path></svg></a>
+                        <ul class="arc3-menu__dropdown-content arc3-typo-ul-no-style">
+                            <li><a class="link--color-dark-grey" href="https://www.photobox.co.uk/personalised-cards/design-your-own" target="_blank" rel="noopener noreferrer">Design your own cards</a></li>
+                            <li><a class="link--color-dark-grey" href="https://www.photobox.co.uk/personalised-cards/baby" target="_blank" rel="noopener noreferrer">Baby cards</a></li>
+                            <li><a class="link--color-dark-grey" href="https://www.photobox.co.uk/personalised-cards/thank-you" target="_blank" rel="noopener noreferrer">Thank you cards</a></li>
+                            <li><a class="link--color-dark-grey" href="https://www.photobox.co.uk/personalised-cards/party-invitations" target="_blank" rel="noopener noreferrer">Party invitations</a></li>
+                            <li><a class="link--color-dark-grey" href="https://www.photobox.co.uk/personalised-cards/holy-communion" target="_blank" rel="noopener noreferrer">Communion cards</a></li>
+                            <li><a class="link--color-dark-grey" href="https://www.photobox.co.uk/personalised-cards/wedding" target="_blank" rel="noopener noreferrer">Wedding cards</a></li>
+                            <li><a class="link--color-dark-grey" href="https://www.photobox.co.uk/personalised-cards/christmas" target="_blank" rel="noopener noreferrer">Christmas cards</a></li>
+                            <li><a class="link--color-dark-grey" href="https://www.photobox.co.uk/personalised-cards/new-year" target="_blank" rel="noopener noreferrer">New Year cards</a></li>
+                            <li class="nav-view-all"><a class="arc3-color-text-secondary arc3-typo--font-bold" href="https://www.photobox.co.uk/personalised-cards" target="_blank" rel="noopener noreferrer">All personalised cards</a></li>
+                        </ul>
+                    </li>
+                    <li class="arc3-menu__dropdown">
+                        <input type="checkbox" class="arc3-hide-for-medium-up arc3-menu-toggle sub-menu js-accordion-toggle" />
+                        <a href="https://www.photobox.co.uk/personalised-calendars" target="_blank" rel="noopener noreferrer" class="arc3-menu__main__nav__button link--color-dark-grey">Calendars<svg class="chevron arc3-hide-for-medium-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 9l7 7 7-7"></path></svg></a>
+                        <ul class="arc3-menu__dropdown-content arc3-typo-ul-no-style">
+                            <li><a class="link--color-dark-grey" href="https://www.photobox.co.uk/personalised-calendars/wall" target="_blank" rel="noopener noreferrer">Wall calendars</a></li>
+                            <li><a class="link--color-dark-grey" href="https://www.photobox.co.uk/personalised-calendars/desk" target="_blank" rel="noopener noreferrer">Desk calendars</a></li>
+                            <li><a class="link--color-dark-grey" href="https://www.photobox.co.uk/personalised-calendars/family-planner" target="_blank" rel="noopener noreferrer">Family planners</a></li>
+                            <li class="nav-view-all"><a class="arc3-color-text-secondary arc3-typo--font-bold" href="https://www.photobox.co.uk/personalised-calendars" target="_blank" rel="noopener noreferrer">All personalised calendars</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="https://www.photobox.co.uk/wedding" target="_blank" rel="noopener noreferrer" class="arc3-menu__main__nav__button link--color-dark-grey">Wedding</a></li>
+                    <li class="arc3-menu__dropdown arc3-hide-for-medium-up">
+                        <input type="checkbox" class="arc3-hide-for-medium-up arc3-menu-toggle sub-menu js-accordion-toggle" />
+                        <a href="#" class="arc3-menu__main__nav__button link--color-dark-grey">Blog<svg class="chevron arc3-hide-for-medium-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 9l7 7 7-7"></path></svg></a>
+                        <ul class="arc3-menu__dropdown-content arc3-typo-ul-no-style">
+                            <li><a class="link--color-dark-grey" href="#">News</a></li>
+                            <li><a class="link--color-dark-grey" href="#">Creative ideas</a></li>
+                            <li><a class="link--color-dark-grey" href="#">Photography</a></li>
+                            <li><a class="link--color-dark-grey" href="#">Occasions</a></li>
+                            <li><a class="link--color-dark-grey" href="#">Decor</a></li>
+                            <li><a class="link--color-dark-grey" href="#">Featured</a></li>
+                            <li class="nav-view-all"><a class="arc3-color-text-secondary arc3-typo--font-bold" href="https://www.photobox.co.uk/blog" target="_blank" rel="noopener noreferrer">All blog posts</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<span id="top"></span>
+
+<!-- Exploratory: floating "Find a gift" button, appears once the hero
+     has scrolled out of view. Compare against the in-section CTA at
+     the end of the reviews carousel — see initFloatingGiftButton() in
+     app.js for the show/hide logic. -->
+<a class="floating-gift-btn" id="floating-gift-btn" href="#picker">↑ Back to top</a>
+
+<section class="hero-wrap" id="hero-wrap">
+  <div class="arc3-container">
+    <div class="arc3-image-and-panel --wide-panel hero">
+      <div class="arc3-banner-image">
+        <img class="hero-media" src="assets/header-recipient.jpg" alt="A parent and child looking through a Photobox photo book together by the Christmas tree">
+        <div class="hero-wave" aria-hidden="true"></div>
+      </div>
+      <div class="arc3-panel --borderless arc3-panel--middle-left --text-position-left-for-wide-tablet-up hero-copy">
+        <span class="eyebrow">Personalised Gifts</span>
+        <h1>Photos they'll <span class="coral">actually keep</span> forever</h1>
+        <p class="hero-sub">Turn the photos sitting on your phone into a gift that tells a story — something personal, beautifully made, and ready when you need it.</p>
+        <div class="hero-ctas">
+          <a class="arc3-btn hero-primary-cta" role="button" href="#picker">Find the right gift</a>
+        </div>
+        <div class="arc3-score hero-score">
+          <span class="arc3-star-rating arc3-star-rating--5"></span>
+          <span class="arc3-score__text"><strong>4.8</strong> based on <a class="hero-score__link" href="#reviews">1729 reviews</a></span>
+        </div>
+        <div class="share-row">
+          <button class="share-btn" id="share-btn" aria-label="Share this page" aria-expanded="false" aria-controls="share-popover">
+            <span class="material-symbols-outlined" aria-hidden="true" style="font-size:20px;line-height:1;">share</span>
+            <span>Share</span>
+          </button>
+          <div class="share-popover" id="share-popover" role="dialog" aria-label="Share options" hidden>
+            <div class="share-popover__header">
+              <span class="share-popover__title">Share</span>
+              <button class="share-popover__close" aria-label="Close share menu">
+                <svg width="12" height="12" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M1 1l12 12M13 1L1 13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              </button>
+            </div>
+            <div class="share-popover__actions">
+              <a class="share-popover__action" id="share-facebook" href="#" target="_blank" rel="noopener noreferrer" aria-label="Share on Facebook">
+                <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="18" cy="18" r="18" fill="#1877F2"/><path d="M19.6 28v-8.4h2.8l.4-3.2h-3.2V14.4c0-.9.25-1.5 1.55-1.5H23v-2.85A20.7 20.7 0 0 0 20.55 10c-2.45 0-4.15 1.5-4.15 4.25v2.15H13.6v3.2h2.8V28h3.2Z" fill="#fff"/></svg>
+                <span>Facebook</span>
+              </a>
+              <a class="share-popover__action" id="share-pinterest" href="#" target="_blank" rel="noopener noreferrer" aria-label="Share on Pinterest">
+                <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="18" cy="18" r="18" fill="#E60023"/><path d="M18 8C12.477 8 8 12.477 8 18c0 4.236 2.636 7.855 6.356 9.312-.088-.791-.167-2.005.035-2.868.181-.78 1.207-5.119 1.207-5.119s-.308-.617-.308-1.53c0-1.433.832-2.506 1.865-2.506.88 0 1.305.66 1.305 1.452 0 .884-.564 2.209-.856 3.438-.244 1.027.515 1.862 1.524 1.862 1.829 0 3.236-1.928 3.236-4.71 0-2.462-1.769-4.183-4.293-4.183-2.924 0-4.639 2.193-4.639 4.46 0 .883.34 1.829.763 2.346a.306.306 0 0 1 .071.292c-.078.322-.25 1.027-.284 1.171-.045.19-.151.23-.347.138-1.299-.605-2.11-2.508-2.11-4.038 0-3.28 2.383-6.296 6.876-6.296 3.61 0 6.416 2.572 6.416 6.005 0 3.584-2.26 6.468-5.396 6.468-1.054 0-2.046-.548-2.386-1.195l-.648 2.419c-.235.902-.868 2.034-1.292 2.723.974.301 2.006.464 3.075.464C23.523 28 28 23.523 28 18S23.523 8 18 8Z" fill="#fff"/></svg>
+                <span>Pinterest</span>
+              </a>
+              <a class="share-popover__action" id="share-whatsapp" href="#" target="_blank" rel="noopener noreferrer" aria-label="Share on WhatsApp">
+                <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="18" cy="18" r="18" fill="#25D366"/><path d="M18.003 9C13.032 9 9 13.029 9 18s4.032 9 9.003 9c1.62 0 3.141-.427 4.455-1.175L27 27l-1.206-4.41A8.948 8.948 0 0 0 27.006 18C27.006 13.029 22.974 9 18.003 9Zm4.47 12.255c-.186.524-1.095.999-1.494 1.038-.384.036-.745.18-2.514-.524-2.13-.847-3.495-3.03-3.6-3.171-.105-.14-.855-1.137-.855-2.169s.54-1.537.732-1.747c.192-.21.42-.263.558-.263l.402.008c.129.006.303-.049.474.362.174.42.591 1.452.642 1.558.051.106.085.23.017.37-.068.14-.102.228-.204.35-.102.12-.215.27-.306.362-.102.103-.208.214-.09.42.12.205.531.876 1.14 1.418.783.697 1.443.912 1.65 1.014.207.102.327.085.447-.051.12-.137.516-.602.654-.809.138-.207.276-.172.465-.103.189.069 1.2.566 1.407.668.207.103.345.154.396.24.051.083.051.483-.135 1.008Z" fill="#fff"/></svg>
+                <span>Whatsapp</span>
+              </a>
+              <button class="share-popover__action share-popover__action--copy" id="share-copy" aria-label="Copy link">
+                <span class="share-popover__icon-wrap" aria-hidden="true"><span class="material-symbols-outlined" style="font-size:20px;line-height:1;">link</span></span>
+                <span>Copy link</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="picker" class="bg-cream section">
+  <div class="container">
+    <div class="section-head picker-head">
+      <h2 class="heading">Who's this gift for?</h2>
+      <p class="subcopy">Choose one below and we'll show you gift ideas that are actually right for them.</p>
+    </div>
+
+    <div id="chips" class="chips" role="group" aria-label="Choose a recipient"></div>
+
+    <div class="urgency-filter">
+      <span class="urgency-label">How soon?</span>
+      <div id="urgency-chips" class="urgency-chips" role="group" aria-label="How soon do you need it?"></div>
+    </div>
+
+    <div id="product-grid" class="product-grid"></div>
+    <div class="product-scrollbar"><div class="product-scrollbar-thumb"></div></div>
+    <div class="scroll-arrows" data-scroller="product-grid">
+      <button class="scroll-arrow" type="button" data-dir="prev" aria-label="Scroll to previous gifts">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+      </button>
+      <button class="scroll-arrow" type="button" data-dir="next" aria-label="Scroll to next gifts">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+  </div>
+</section>
+
+<section class="bg-white section covers-section" id="covers">
+  <div class="container">
+    <div class="section-head">
+      <h2 class="heading">A theme for every story</h2>
+    </div>
+
+    <div class="theme-tabs" role="tablist" aria-label="Filter themes by product">
+      <button class="chip theme-tab is-active" type="button" role="tab" aria-selected="true" data-product="book">Photo Books</button>
+      <button class="chip theme-tab" type="button" role="tab" aria-selected="false" data-product="calendar">Calendars</button>
+      <button class="chip theme-tab" type="button" role="tab" aria-selected="false" data-product="mug">Mugs</button>
+      <button class="chip theme-tab" type="button" role="tab" aria-selected="false" data-product="card">Cards</button>
+    </div>
+  </div>
+  <div class="covers-rows">
+    <div class="covers-row covers-row-top" data-cover-row="top">
+      <a class="cover-block" href="https://www.photobox.co.uk/photo-books/templates" data-product="book"><img src="../../assets/lifestyle-images/theme-books-open-cover/travel-1.webp" alt="Travel photo book" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="#picker" data-product="mug"><img src="../../assets/lifestyle-images/theme-mugs/mug-family-1.webp" alt="Family mug" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="https://www.photobox.co.uk/photo-books/templates" data-product="book"><img src="../../assets/lifestyle-images/theme-books-open-cover/travel-2.webp" alt="Travel photo book" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="https://www.photobox.co.uk/photo-books/templates" data-product="book"><img src="../../assets/lifestyle-images/theme-books-open-cover/travel-3.webp" alt="Travel photo book" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="#picker" data-product="mug"><img src="../../assets/lifestyle-images/theme-mugs/mug-family-2.webp" alt="Family mug" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="https://www.photobox.co.uk/photo-books/templates" data-product="book"><img src="../../assets/lifestyle-images/theme-books-open-cover/travel-3.webp" alt="Travel photo book" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="#picker" data-product="calendar"><img src="../../assets/lifestyle-images/theme-calendars-front-page/cal-kid-1.webp" alt="Kids calendar" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="https://www.photobox.co.uk/photo-books/templates" data-product="book"><img src="../../assets/lifestyle-images/theme-books-open-cover/year%20in%20review-1.webp" alt="Year in review photo book" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="#picker" data-product="calendar"><img src="../../assets/lifestyle-images/theme-calendars-front-page/cal-kid-2.webp" alt="Kids calendar" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="#picker" data-product="mug"><img src="../../assets/lifestyle-images/theme-mugs/mug-family-3.webp" alt="Family mug" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="https://www.photobox.co.uk/photo-books/templates" data-product="book"><img src="../../assets/lifestyle-images/theme-books-open-cover/year%20in%20review-2.webp" alt="Year in review photo book" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="#picker" data-product="calendar"><img src="../../assets/lifestyle-images/theme-calendars-front-page/cal-travel-2.webp" alt="Travel calendar" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="#picker" data-product="mug"><img src="../../assets/lifestyle-images/theme-mugs/mug-family-4.webp" alt="Family mug" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="https://www.photobox.co.uk/photo-books/templates" data-product="book"><img src="../../assets/lifestyle-images/theme-books-open-cover/travel-1.webp" alt="Travel photo book" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="#picker" data-product="calendar"><img src="../../assets/lifestyle-images/theme-calendars-front-page/cal-travel-1.webp" alt="Travel calendar" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="https://www.photobox.co.uk/photo-books/templates" data-product="book"><img src="../../assets/lifestyle-images/theme-books-open-cover/year%20in%20review-4.webp" alt="Year in review photo book" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="#picker" data-product="mug"><img src="../../assets/lifestyle-images/theme-mugs/mug-family-5.webp" alt="Family mug" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="https://www.photobox.co.uk/photo-books/templates" data-product="book"><img src="../../assets/lifestyle-images/theme-books-open-cover/year%20in%20review-5.webp" alt="Year in review photo book" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="#picker" data-product="calendar"><img src="../../assets/lifestyle-images/theme-calendars-front-page/cal-kid-3.webp" alt="Kids calendar" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="#picker" data-product="mug"><img src="../../assets/lifestyle-images/theme-mugs/mug-pet-1.webp" alt="Pet mug" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="https://www.photobox.co.uk/photo-books/templates" data-product="book"><img src="../../assets/lifestyle-images/theme-books-open-cover/travel-1.webp" alt="Travel photo book" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="#picker" data-product="mug"><img src="../../assets/lifestyle-images/theme-mugs/mug-star-sign-1.webp" alt="Star sign mug" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="#picker" data-product="calendar"><img src="../../assets/lifestyle-images/theme-calendars-front-page/cal-travel-3.webp" alt="Travel calendar" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="#picker" data-product="calendar"><img src="../../assets/lifestyle-images/theme-calendars-front-page/cal-travel-4.webp" alt="Travel calendar" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="#picker" data-product="calendar"><img src="../../assets/lifestyle-images/theme-calendars-front-page/cal-travel-5.webp" alt="Travel calendar" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="#picker" data-product="calendar"><img src="../../assets/lifestyle-images/theme-calendars-front-page/cal-travel-6.webp" alt="Travel calendar" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="#picker" data-product="calendar"><img src="../../assets/lifestyle-images/theme-calendars-front-page/cal-travel-7.webp" alt="Travel calendar" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="#picker" data-product="card"><img src="../../assets/lifestyle-images/theme-cards-landscape/card-baby-1.webp" alt="Baby card" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="#picker" data-product="card"><img src="../../assets/lifestyle-images/theme-cards-landscape/card-baby-2.webp" alt="Baby card" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="#picker" data-product="card"><img src="../../assets/lifestyle-images/theme-cards-landscape/card-christmas-1.webp" alt="Christmas card" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="#picker" data-product="card"><img src="../../assets/lifestyle-images/theme-cards-landscape/card-christmas-2.webp" alt="Christmas card" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="#picker" data-product="card"><img src="../../assets/lifestyle-images/theme-cards-landscape/card-communion-1.webp" alt="Communion card" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="#picker" data-product="card"><img src="../../assets/lifestyle-images/theme-cards-landscape/card-communion-2.webp" alt="Communion card" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="#picker" data-product="card"><img src="../../assets/lifestyle-images/theme-cards-landscape/card-newyear-1.webp" alt="New Year card" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="#picker" data-product="card"><img src="../../assets/lifestyle-images/theme-cards-landscape/card-newyear-2.webp" alt="New Year card" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+    </div>
+    <div class="covers-row covers-row-bottom" data-cover-row="bottom">
+      <a class="cover-block" href="#picker" data-product="mug"><img src="../../assets/lifestyle-images/theme-mugs/mug-wedding-1.webp" alt="Wedding mug" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="#picker" data-product="mug"><img src="../../assets/lifestyle-images/theme-mugs/mug-wedding-2.webp" alt="Wedding mug" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="#picker" data-product="mug"><img src="../../assets/lifestyle-images/theme-mugs/mug-travel-1.webp" alt="Travel mug" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="https://www.photobox.co.uk/photo-books/templates" data-product="book"><img src="../../assets/lifestyle-images/theme-books-open-cover/travel-2.webp" alt="Travel photo book" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="#picker" data-product="calendar"><img src="../../assets/lifestyle-images/theme-calendars-front-page/cal-travel-8.webp" alt="Travel calendar" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="https://www.photobox.co.uk/photo-books/templates" data-product="book"><img src="../../assets/lifestyle-images/theme-books-open-cover/travel-3.webp" alt="Travel photo book" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="https://www.photobox.co.uk/photo-books/templates" data-product="book"><img src="../../assets/lifestyle-images/theme-books-open-cover/wedding-1.webp" alt="Wedding photo book" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="#picker" data-product="calendar"><img src="../../assets/lifestyle-images/theme-calendars-front-page/cal-travel-9.webp" alt="Travel calendar" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="https://www.photobox.co.uk/photo-books/templates" data-product="book"><img src="../../assets/lifestyle-images/theme-books-open-cover/year%20in%20review-1.webp" alt="Year in review photo book" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="https://www.photobox.co.uk/photo-books/templates" data-product="book"><img src="../../assets/lifestyle-images/theme-books-open-cover/year%20in%20review-2.webp" alt="Year in review photo book" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="#picker" data-product="mug"><img src="../../assets/lifestyle-images/theme-mugs/mug-travel-2.webp" alt="Travel mug" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="#picker" data-product="calendar"><img src="../../assets/lifestyle-images/theme-calendars-front-page/cal-wedding-1.webp" alt="Wedding calendar" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="https://www.photobox.co.uk/photo-books/templates" data-product="book"><img src="../../assets/lifestyle-images/theme-books-open-cover/year%20in%20review-3.webp" alt="Year in review photo book" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="https://www.photobox.co.uk/photo-books/templates" data-product="book"><img src="../../assets/lifestyle-images/theme-books-open-cover/year%20in%20review-4.webp" alt="Year in review photo book" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="#picker" data-product="calendar"><img src="../../assets/lifestyle-images/theme-calendars-front-page/cal-wedding-2.webp" alt="Wedding calendar" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="https://www.photobox.co.uk/photo-books/templates" data-product="book"><img src="../../assets/lifestyle-images/theme-books-open-cover/year%20in%20review-5.webp" alt="Year in review photo book" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="#picker" data-product="mug"><img src="../../assets/lifestyle-images/theme-mugs/mug-travel-3.webp" alt="Travel mug" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="https://www.photobox.co.uk/photo-books/templates" data-product="book"><img src="../../assets/lifestyle-images/theme-books-open-cover/travel-1.webp" alt="Travel photo book" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="https://www.photobox.co.uk/photo-books/templates" data-product="book"><img src="../../assets/lifestyle-images/theme-books-open-cover/travel-2.webp" alt="Travel photo book" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="#picker" data-product="calendar"><img src="../../assets/lifestyle-images/theme-calendars-front-page/cal-wedding-3.webp" alt="Wedding calendar" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="#picker" data-product="mug"><img src="../../assets/lifestyle-images/theme-mugs/mug-travel-4.webp" alt="Travel mug" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="https://www.photobox.co.uk/photo-books/templates" data-product="book"><img src="../../assets/lifestyle-images/theme-books-open-cover/travel-3.webp" alt="Travel photo book" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="#picker" data-product="mug"><img src="../../assets/lifestyle-images/theme-mugs/mug-travel-5.webp" alt="Travel mug" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="https://www.photobox.co.uk/photo-books/templates" data-product="book"><img src="../../assets/lifestyle-images/theme-books-open-cover/wedding-1.webp" alt="Wedding photo book" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="#picker" data-product="mug"><img src="../../assets/lifestyle-images/theme-mugs/mug-travel-6.webp" alt="Travel mug" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="#picker" data-product="calendar"><img src="../../assets/lifestyle-images/theme-calendars-front-page/cal-kid-1.webp" alt="Kids calendar" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="#picker" data-product="calendar"><img src="../../assets/lifestyle-images/theme-calendars-front-page/cal-kid-2.webp" alt="Kids calendar" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="#picker" data-product="calendar"><img src="../../assets/lifestyle-images/theme-calendars-front-page/cal-kid-3.webp" alt="Kids calendar" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="#picker" data-product="calendar"><img src="../../assets/lifestyle-images/theme-calendars-front-page/cal-travel-1.webp" alt="Travel calendar" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="#picker" data-product="calendar"><img src="../../assets/lifestyle-images/theme-calendars-front-page/cal-travel-2.webp" alt="Travel calendar" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="#picker" data-product="card"><img src="../../assets/lifestyle-images/theme-cards-landscape/card-newyear-3.webp" alt="New Year card" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="#picker" data-product="card"><img src="../../assets/lifestyle-images/theme-cards-landscape/card-newyear-4.webp" alt="New Year card" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="#picker" data-product="card"><img src="../../assets/lifestyle-images/theme-cards-landscape/card-party-1.webp" alt="Party card" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="#picker" data-product="card"><img src="../../assets/lifestyle-images/theme-cards-landscape/card-party-2.webp" alt="Party card" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="#picker" data-product="card"><img src="../../assets/lifestyle-images/theme-cards-landscape/card-party-3.webp" alt="Party card" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="#picker" data-product="card"><img src="../../assets/lifestyle-images/theme-cards-landscape/card-wedding-1.webp" alt="Wedding card" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+      <a class="cover-block" href="#picker" data-product="card"><img src="../../assets/lifestyle-images/theme-cards-landscape/card-wedding-2.webp" alt="Wedding card" loading="lazy"><span class="cover-overlay"><span class="arc3-btn-secondary cover-cta">View theme</span></span></a>
+    </div>
+  </div>
+  <div class="container">
+    <div class="theme-cta">
+      <a class="arc3-btn theme-cta-btn" role="button" href="#picker">See all Photo Book themes</a>
+    </div>
+  </div>
+</section>
+
+<section class="bg-cream section occasions-section">
+  <div class="container">
+    <div class="occasions-head">
+      <div>
+        <h2 class="heading">Ideas for every occasion</h2>
+      </div>
+    </div>
+
+    <div class="carousel" id="occasions-carousel">
+      <article class="occasion-card">
+        <div class="media">
+          <div class="media-fallback"><span class="ic">🎂</span><span class="lbl">Birthday Gifts</span></div>
+          <img src="assets/occ-birthday.png" alt="Birthday photo gift ideas" loading="lazy" class="is-real" onerror="this.classList.add('failed')">
+          <span class="cat-tag">Birthday gifts</span>
+        </div>
+        <div class="occasion-body">
+          <h3>Another Year, Another Photo to Add</h3>
+          <p>Skip the same old card. Turn this year's photos into the gift they'll actually keep.</p>
+          <div class="occasion-foot">
+            <a class="arc3-btn" role="button" href="https://www.photobox.co.uk/personalised-gifts/birthday" target="_blank" rel="noopener noreferrer">Explore ideas</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="occasion-card">
+        <div class="media">
+          <div class="media-fallback"><span class="ic">💍</span><span class="lbl">Wedding Gifts</span></div>
+          <img class="is-real" src="assets/occ-wedding.jpg" alt="Bride and groom walking through confetti after their ceremony" loading="lazy" onerror="this.classList.add('failed')">
+          <span class="cat-tag">Wedding gifts</span>
+        </div>
+        <div class="occasion-body">
+          <h3>The Whole Day, Start to Last Dance</h3>
+          <p>Hundreds of photos on a memory card, turned into the one thing you'll still open in twenty years.</p>
+          <div class="occasion-foot">
+            <a class="arc3-btn" role="button" href="https://www.photobox.co.uk/personalised-gifts/wedding" target="_blank" rel="noopener noreferrer">Explore ideas</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="occasion-card">
+        <div class="media">
+          <div class="media-fallback"><span class="ic">🍼</span><span class="lbl">New Baby Gifts</span></div>
+          <img src="assets/occ-newbaby.jpg" alt="New baby photo gift ideas" loading="lazy" class="is-real" onerror="this.classList.add('failed')">
+          <span class="cat-tag">New baby gifts</span>
+        </div>
+        <div class="occasion-body">
+          <h3>Their First Photos, Made to Keep</h3>
+          <p>Those first few months go fast. Print them before they're buried in a camera roll.</p>
+          <div class="occasion-foot">
+            <a class="arc3-btn" role="button" href="https://www.photobox.co.uk/personalised-gifts/baby-gifts" target="_blank" rel="noopener noreferrer">Explore ideas</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="occasion-card">
+        <div class="media">
+          <div class="media-fallback"><span class="ic">🥂</span><span class="lbl">Anniversary Gifts</span></div>
+          <img src="assets/occ-anniversary.jpg" alt="Anniversary photo gift ideas" loading="lazy" class="is-real" onerror="this.classList.add('failed')">
+          <span class="cat-tag">Anniversary gifts</span>
+        </div>
+        <div class="occasion-body">
+          <h3>Every Year, One More Chapter</h3>
+          <p>From the first date to now — a book that keeps growing with you.</p>
+          <div class="occasion-foot">
+            <a class="arc3-btn" role="button" href="https://www.photobox.co.uk/personalised-gifts/anniversary" target="_blank" rel="noopener noreferrer">Explore ideas</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="occasion-card">
+        <div class="media">
+          <div class="media-fallback"><span class="ic">🎄</span><span class="lbl">Christmas Gifts</span></div>
+          <img class="is-real" src="assets/occ-christmas.jpg" alt="Photo books beside wrapped gifts and fairy lights" loading="lazy" onerror="this.classList.add('failed')">
+          <span class="cat-tag">Christmas gifts</span>
+        </div>
+        <div class="occasion-body">
+          <h3>The Present They Unwrap Twice</h3>
+          <p>Once on the day, then again every time they take it off the shelf. Order by 8pm for express delivery.</p>
+          <div class="occasion-foot">
+            <a class="arc3-btn" role="button" href="https://www.photobox.co.uk/personalised-gifts/christmas" target="_blank" rel="noopener noreferrer">Explore ideas</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="occasion-card">
+        <div class="media">
+          <div class="media-fallback"><span class="ic">🕊️</span><span class="lbl">Communion Gifts</span></div>
+          <img src="assets/occ-communion.webp" alt="Communion photo gift ideas" loading="lazy" class="is-real" onerror="this.classList.add('failed')">
+          <span class="cat-tag">Communion gifts</span>
+        </div>
+        <div class="occasion-body">
+          <h3>A Day Worth Keeping</h3>
+          <p>The family, the outfit, the occasion — printed into a keepsake for years to come.</p>
+          <div class="occasion-foot">
+            <a class="arc3-btn" role="button" href="https://www.photobox.co.uk/communion" target="_blank" rel="noopener noreferrer">Explore ideas</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="occasion-card">
+        <div class="media">
+          <div class="media-fallback"><span class="ic">❤️</span><span class="lbl">Valentine's Day</span></div>
+          <img class="is-real" src="assets/occ-valentines.jpg" alt="Heart-covered photo book of a couple, held on a sofa" loading="lazy" onerror="this.classList.add('failed')">
+          <span class="cat-tag">Valentine's Day</span>
+        </div>
+        <div class="occasion-body">
+          <h3>The Story of Us, So Far</h3>
+          <p>Better than flowers that wilt — every trip, in-joke and quiet Sunday you've collected together.</p>
+          <div class="occasion-foot">
+            <a class="arc3-btn" role="button" href="https://www.photobox.co.uk/personalised-gifts/valentines" target="_blank" rel="noopener noreferrer">Explore ideas</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="occasion-card">
+        <div class="media">
+          <div class="media-fallback"><span class="ic">💐</span><span class="lbl">Mother's Day</span></div>
+          <img class="is-real" src="assets/occ-mothers-day.jpg" alt="Mother and child looking through a photo book together" loading="lazy" onerror="this.classList.add('failed')">
+          <span class="cat-tag">Mother's Day</span>
+        </div>
+        <div class="occasion-body">
+          <h3>For the One Who Kept Every Photo</h3>
+          <p>She's behind the camera in most of them. Give her the album she never got round to making.</p>
+          <div class="occasion-foot">
+            <a class="arc3-btn" role="button" href="https://www.photobox.co.uk/personalised-gifts/mothers-day" target="_blank" rel="noopener noreferrer">Explore ideas</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="occasion-card">
+        <div class="media">
+          <div class="media-fallback"><span class="ic">🎣</span><span class="lbl">Father's Day</span></div>
+          <img class="is-real" src="assets/occ-fathers-day.jpg" alt="Father and child out on the water together" loading="lazy" onerror="this.classList.add('failed')">
+          <span class="cat-tag">Father's Day</span>
+        </div>
+        <div class="occasion-body">
+          <h3>Every Adventure You've Had Together</h3>
+          <p>Skip the socks. Print the years of camping trips, bike rides and days out he never talks about.</p>
+          <div class="occasion-foot">
+            <a class="arc3-btn" role="button" href="https://www.photobox.co.uk/personalised-gifts/fathers-day" target="_blank" rel="noopener noreferrer">Explore ideas</a>
+          </div>
+        </div>
+      </article>
+    </div>
+    <div class="carousel-scrollbar" data-scroller="occasions-carousel"><div class="carousel-scrollbar-thumb"></div></div>
+    <div class="scroll-arrows" data-scroller="occasions-carousel">
+      <button class="scroll-arrow" type="button" data-dir="prev" aria-label="Scroll to previous occasions">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+      </button>
+      <button class="scroll-arrow" type="button" data-dir="next" aria-label="Scroll to next occasions">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+  </div>
+</section>
+
+<section id="how" class="bg-navy section">
+  <div class="container how-grid">
+    <div>
+      <h2 class="how-heading">From photos on your phone to gifts in their hands</h2>
+
+      <div class="steps">
+        <div class="step is-active" data-step="1">
+          <div class="step-num">1</div>
+          <div>
+            <div class="step-title">Pick your photos</div>
+            <div class="step-desc">Upload straight from your phone, camera roll, or social — no cables, no fuss.</div>
+          </div>
+        </div>
+        <div class="step" data-step="2">
+          <div class="step-num">2</div>
+          <div>
+            <div class="step-title">We create the layout</div>
+            <div class="step-desc">Our automatic layout arranges your photos beautifully — tweak anything you like.</div>
+          </div>
+        </div>
+        <div class="step" data-step="3">
+          <div class="step-num">3</div>
+          <div>
+            <div class="step-title">Preview before you order</div>
+            <div class="step-desc">See exactly how your gift will look, page by page, before you buy.</div>
+          </div>
+        </div>
+        <div class="step" data-step="4">
+          <div class="step-num">4</div>
+          <div>
+            <div class="step-title">Delivered to their door</div>
+            <div class="step-desc">Sent straight to their door, or to you to hand over in person — your choice, every time.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="how-media" id="how-media-panel">
+      <div class="how-timer-bar" id="how-timer-bar"></div>
+      <!-- Desktop: single panel with crossfade. Hidden on mobile. -->
+      <div class="media how-desktop-media">
+        <!-- Steps 1–3: video; step 4: image. Driven by initHowItWorks() in app.js. -->
+        <video id="how-media-video" autoplay muted loop playsinline class="how-media-item is-hidden">
+          <source id="how-media-video-src-alpha" src="" type='video/mp4; codecs="hvc1"'>
+          <source id="how-media-video-src" src="" type="video/mp4">
+        </video>
+        <img id="how-media-img" class="how-media-item is-real"
+          src="../../assets/Stink%20Studios%20Imagery/Lifestyle/PB_LIFESTYLE_ISOMETRIC_LS_X1_SOFA%20Large.jpeg"
+          alt="Giving a gift" loading="eager">
+      </div>
+      <!-- Mobile: swipeable carousel with peek. Hidden on desktop. -->
+      <div class="how-carousel-wrap" id="how-carousel-wrap">
+        <div class="how-carousel-track" id="how-carousel-track">
+          <div class="how-slide" data-slide="1">
+            <div class="how-slide-inner">
+              <video muted loop playsinline class="how-slide-media">
+                <source src="../../assets/Video/1_my_photos.mp4" type="video/mp4">
+              </video>
+            </div>
+            <div class="how-caption">
+              <div class="how-caption-title">Pick your photos</div>
+              <div class="how-caption-desc">Upload straight from your phone, camera roll, or social — no cables, no fuss.</div>
+            </div>
+          </div>
+          <div class="how-slide" data-slide="2">
+            <div class="how-slide-inner">
+              <video muted loop playsinline class="how-slide-media">
+                <source src="../../assets/Video/2_edit_pages.mp4" type="video/mp4">
+              </video>
+            </div>
+            <div class="how-caption">
+              <div class="how-caption-title">We create the layout</div>
+              <div class="how-caption-desc">Our automatic layout arranges your photos beautifully — tweak anything you like.</div>
+            </div>
+          </div>
+          <div class="how-slide" data-slide="3">
+            <div class="how-slide-inner">
+              <video muted loop playsinline class="how-slide-media">
+                <source src="../../assets/Video/3_ui_generic.mp4" type="video/mp4">
+              </video>
+            </div>
+            <div class="how-caption">
+              <div class="how-caption-title">Preview before you order</div>
+              <div class="how-caption-desc">See exactly how your gift will look, page by page, before you buy.</div>
+            </div>
+          </div>
+          <div class="how-slide" data-slide="4">
+            <div class="how-slide-inner">
+              <img src="../../assets/Stink%20Studios%20Imagery/Lifestyle/PB_LIFESTYLE_ISOMETRIC_LS_X1_SOFA%20Large.jpeg"
+                alt="Giving a gift" loading="lazy" class="how-slide-media is-real">
+            </div>
+            <div class="how-caption">
+              <div class="how-caption-title">Delivered to their door</div>
+              <div class="how-caption-desc">Sent straight to their door, or to you to hand over in person — your choice, every time.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile-only caption: mirrors the active step's title/desc from .steps above.
+         Sits below the media panel. Hidden on desktop. -->
+    <div class="how-caption">
+      <div class="how-caption-title"></div>
+      <div class="how-caption-desc"></div>
+      <div class="how-caption-detail"></div>
+    </div>
+
+    <!-- Mobile-only progress scrollbar: thumb position tracks the auto-advance timer. -->
+    <div class="how-scrollbar" id="how-scrollbar">
+      <div class="how-scrollbar-thumb" id="how-scrollbar-thumb"></div>
+    </div>
+
+    <!-- Mobile-only prev/next arrows for manual step navigation. -->
+    <div class="how-arrows">
+      <button type="button" class="how-arrow scroll-arrow" data-dir="prev" aria-label="Previous step">
+        <svg width="22" height="22" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <button type="button" class="how-arrow scroll-arrow" data-dir="next" aria-label="Next step">
+        <svg width="22" height="22" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M7.5 5L12.5 10L7.5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+  </div>
+</section>
+
+<section id="reviews" class="bg-cream section">
+  <div class="container">
+    <div class="section-head">
+      <h2 class="heading">5-star reviews from our satisfied customers</h2>
+      <div class="arc3-score reviews-score">
+        <span class="arc3-star-rating arc3-star-rating--5" aria-hidden="true"></span>
+        <span class="arc3-score__text"><strong>4.8</strong> based on <a class="hero-score__link" href="https://www.trustpilot.com/review/www.photobox.co.uk" target="_blank" rel="noopener noreferrer">1729 reviews</a></span>
+      </div>
+    </div>
+
+    <div class="reviews" id="reviews-carousel">
+      <article class="review-card">
+        <span class="arc3-star-rating arc3-star-rating--5" aria-hidden="true"></span>
+        <h3 class="review-title">A gift that left her speechless</h3>
+        <p class="review-quote">"I turned years of photos into a book for my best friend's 30th. She went quiet turning the pages. That never happens with a card."</p>
+        <button class="review-see-more" type="button">See more</button>
+        <div class="review-attr">
+          <div>
+            <div class="review-name">Alice, 34</div>
+            <div class="review-meta">3 days ago</div>
+          </div>
+        </div>
+      </article>
+
+      <article class="review-card">
+        <span class="arc3-star-rating arc3-star-rating--5" aria-hidden="true"></span>
+        <h3 class="review-title">The most personal wedding gift we gave</h3>
+        <p class="review-quote">"We spent ages trying to think of something meaningful for my brother's wedding that wasn't just another voucher or kitchen gadget. A friend suggested a photo book and honestly I was sceptical — I'd never made one before and wasn't sure it would look good enough for a wedding. But the finished book genuinely blew us away. We used photos from across their whole relationship, from their first holiday together to the engagement. The lay-flat pages meant the double spreads looked incredible, and the print quality was really sharp. My sister-in-law cried when she opened it. That was the moment we knew we'd made the right call. We're already planning one for my parents' anniversary."</p>
+        <button class="review-see-more" type="button">See more</button>
+        <div class="review-attr">
+          <div>
+            <div class="review-name">Rosie, 29</div>
+            <div class="review-meta">2 weeks ago</div>
+          </div>
+        </div>
+      </article>
+
+      <article class="review-card">
+        <span class="arc3-star-rating arc3-star-rating--5" aria-hidden="true"></span>
+        <h3 class="review-title">The gift my husband shows everyone</h3>
+        <p class="review-quote">"Our anniversary photo book arrived in three days and the lay-flat pages look incredible. It's the gift my husband shows everyone who visits."</p>
+        <button class="review-see-more" type="button">See more</button>
+        <div class="review-attr">
+          <div>
+            <div class="review-name">Carolyn, 37</div>
+            <div class="review-meta">1 week ago</div>
+          </div>
+        </div>
+      </article>
+
+      <article class="review-card">
+        <span class="arc3-star-rating arc3-star-rating--5" aria-hidden="true"></span>
+        <h3 class="review-title">Looked like a luxury gift</h3>
+        <p class="review-quote">"The canvas and print bundle for the newlyweds was beautifully boxed — it genuinely looked like a luxury gift, not something I made on my phone."</p>
+        <button class="review-see-more" type="button">See more</button>
+        <div class="review-attr">
+          <div>
+            <div class="review-name">Tayyiba, 41</div>
+            <div class="review-meta">5 days ago</div>
+          </div>
+        </div>
+      </article>
+
+      <article class="review-card">
+        <span class="arc3-star-rating arc3-star-rating--5" aria-hidden="true"></span>
+        <h3 class="review-title">Made the retirement speech for us</h3>
+        <p class="review-quote">"We put together a colleague's leaving book in a single lunch break. It arrived before her last day and she read it out loud at her own leaving do."</p>
+        <button class="review-see-more" type="button">See more</button>
+        <div class="review-attr">
+          <div>
+            <div class="review-name">Marcus, 29</div>
+            <div class="review-meta">2 days ago</div>
+          </div>
+        </div>
+      </article>
+
+      <article class="review-card">
+        <span class="arc3-star-rating arc3-star-rating--5" aria-hidden="true"></span>
+        <h3 class="review-title">Grandad hasn't stopped showing people</h3>
+        <p class="review-quote">"A calendar of the grandkids, one for every month. My dad's had it on his desk since Christmas and shows it to everyone who walks past."</p>
+        <button class="review-see-more" type="button">See more</button>
+        <div class="review-attr">
+          <div>
+            <div class="review-name">Priya, 45</div>
+            <div class="review-meta">1 day ago</div>
+          </div>
+        </div>
+      </article>
+
+      <article class="review-card">
+        <span class="arc3-star-rating arc3-star-rating--5" aria-hidden="true"></span>
+        <h3 class="review-title">Arrived faster than expected</h3>
+        <p class="review-quote">"Ordered the mug at 6pm for a birthday the next morning. It arrived on time and the print quality was better than I expected."</p>
+        <button class="review-see-more" type="button">See more</button>
+        <div class="review-attr">
+          <div>
+            <div class="review-name">Jamie, 31</div>
+            <div class="review-meta">4 days ago</div>
+          </div>
+        </div>
+      </article>
+
+      <article class="review-card">
+        <span class="arc3-star-rating arc3-star-rating--5" aria-hidden="true"></span>
+        <h3 class="review-title">Finally something dad actually keeps on display</h3>
+        <p class="review-quote">"Every year I get my dad the same kind of thing — aftershave, socks, a book he'll never read. This time my wife suggested doing a calendar with photos of the grandchildren. I was doubtful he'd actually put it up, but it's been on his kitchen wall since Christmas. He told me last week that a neighbour asked where he'd bought it because she thought it looked professional. It didn't take long to make either — I uploaded everything from my phone in about 20 minutes. The only hard part was choosing which photos not to use."</p>
+        <button class="review-see-more" type="button">See more</button>
+        <div class="review-attr">
+          <div>
+            <div class="review-name">David, 54</div>
+            <div class="review-meta">3 weeks ago</div>
+          </div>
+        </div>
+      </article>
+    </div>
+    <div class="carousel-scrollbar" data-scroller="reviews-carousel"><div class="carousel-scrollbar-thumb"></div></div>
+    <div class="scroll-arrows" data-scroller="reviews-carousel">
+      <button class="scroll-arrow" type="button" data-dir="prev" aria-label="Scroll to previous reviews">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+      </button>
+      <button class="scroll-arrow" type="button" data-dir="next" aria-label="Scroll to next reviews">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+  </div>
+</section>
+
+<section class="bg-white section gift-highlights">
+  <div class="container">
+    <div class="section-head">
+      <h2 class="heading">Gifts for everyone on your list</h2>
+    </div>
+
+    <div class="gift-highlight-row">
+      <a class="gift-highlight-card" href="https://www.photobox.co.uk/personalised-gifts/for-her" target="_blank" rel="noopener noreferrer">
+        <div class="ghc-media"><img src="assets/mum-canvas.jpg" alt="Woman hanging a personalised canvas print of her family" loading="lazy"></div>
+        <div class="ghc-body">
+          <h3>Gifts for her</h3>
+          <p>Thoughtful photo gifts she'll actually use.</p>
+        </div>
+      </a>
+      <a class="gift-highlight-card" href="https://www.photobox.co.uk/personalised-gifts/for-him" target="_blank" rel="noopener noreferrer">
+        <div class="ghc-media"><img src="assets/occ-fathers-day.jpg" alt="Father and child out on the water together" loading="lazy"></div>
+        <div class="ghc-body">
+          <h3>Gifts for him</h3>
+          <p>Personalised photo gifts for the harder-to-buy-for.</p>
+        </div>
+      </a>
+      <a class="gift-highlight-card" href="https://www.photobox.co.uk/personalised-gifts/for-teachers" target="_blank" rel="noopener noreferrer">
+        <div class="ghc-media"><img src="../../assets/product-images/calendar-planner.jpg" alt="Personalised family planner calendar" loading="lazy"></div>
+        <div class="ghc-body">
+          <h3>Gifts for teachers</h3>
+          <p>A thoughtful thank-you from the whole class.</p>
+        </div>
+      </a>
+      <a class="gift-highlight-card" href="https://www.photobox.co.uk/personalised-gifts/for-friends" target="_blank" rel="noopener noreferrer">
+        <div class="ghc-media"><img src="assets/bf-mug.jpg" alt="Two friends laughing, printed on a personalised photo mug" loading="lazy"></div>
+        <div class="ghc-body">
+          <h3>Gifts for friends</h3>
+          <p>Inside jokes and best days, printed and framed.</p>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section class="bg-cream section app-promo" id="app-promo">
+  <div class="container app-promo-inner">
+    <div class="app-promo-content">
+      <div class="app-promo-head">
+        <h2 class="heading">Create gifts on the go</h2>
+        <p class="app-promo-desc">Upload photos, design your gift and track delivery — all from your phone.</p>
+      </div>
+      <div class="app-promo-cards">
+        <a class="app-dl-card" href="https://apps.apple.com/gb/app/id574408353" target="_blank" rel="noopener noreferrer">
+          <img class="arc3-app-store-btn" src="https://arc3.sf.albelli.com/dist/cdn/img/app-badge-apple-en.svg" alt="Download on the App Store">
+        </a>
+        <a class="app-dl-card" href="https://play.google.com/store/apps/details?id=com.photobox.android&hl=en-GB" target="_blank" rel="noopener noreferrer">
+          <img class="arc3-app-store-btn" src="https://arc3.sf.albelli.com/dist/cdn/img/app-badge-android-en.svg" alt="Get it on Google Play">
+        </a>
+      </div>
+      <div class="app-promo-trust">
+        <span class="app-trust-label">124k+ happy gifters</span>
+        <span class="app-trust-divider" aria-hidden="true">|</span>
+        <span class="app-trust-stars" aria-hidden="true">★★★★★</span>
+        <span class="app-trust-rating">4.9 / 5</span>
+      </div>
+    </div>
+    <div class="app-promo-phone" aria-hidden="true">
+      <div class="app-phone-mockup">
+        <div class="app-phone-island"></div>
+        <div class="app-phone-screen">
+          <div class="app-qr-card">
+            <div id="app-qr-code"></div>
+            <p class="app-qr-hint">Scan to download</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Content sourced verbatim from the live "Frequently asked questions" /
+     Q&A sections on photobox.co.uk/personalised-mugs and
+     photobox.co.uk/personalised-jigsaw — the only two of the five
+     product pages checked (mugs, photo block, magnets, jigsaw, cushion)
+     that actually have an FAQ/Q&A section. Built with the real ARC-3
+     arc3-accordion component. -->
+<section class="bg-white section">
+  <div class="container">
+    <div class="section-head">
+      <h2 class="heading">Frequently asked questions</h2>
+    </div>
+
+    <ul class="arc3-accordion">
+      <li class="arc3-accordion__item">
+        <div class="arc3-accordion__headline-content">
+          <div class="arc3-accordion__titles">
+            <div class="arc3-accordion__title"><b>Are your personalised mugs microwave and dishwasher safe?</b></div>
+          </div>
+        </div>
+        <div class="arc3-accordion__toggle-icon">
+          <div class="arc3-accordion__horizontal-toggle-icon"></div>
+          <div class="arc3-accordion__vertical-toggle-icon"></div>
+        </div>
+        <div class="arc3-accordion__body">
+          <p>Our custom mugs are indeed both microwave and dishwasher safe. The only exception is our heat-changing mugs, which are microwave safe, but need to be hand washed to help preserve their effect.</p>
+        </div>
+        <div class="arc3-accordion__close-area">
+          Close
+          <div class="arc3-accordion__close-area-icon"><div class="arc3-accordion__horizontal-toggle-icon"></div></div>
+        </div>
+      </li>
+
+      <li class="arc3-accordion__item">
+        <div class="arc3-accordion__headline-content">
+          <div class="arc3-accordion__titles">
+            <div class="arc3-accordion__title"><b>What is the size and capacity of your photo mugs?</b></div>
+          </div>
+        </div>
+        <div class="arc3-accordion__toggle-icon">
+          <div class="arc3-accordion__horizontal-toggle-icon"></div>
+          <div class="arc3-accordion__vertical-toggle-icon"></div>
+        </div>
+        <div class="arc3-accordion__body">
+          <p>Our mugs are 8.2 x 9.5 cm, and hold up to 285ml – perfect for a nice, satisfying hot beverage in your personalised cup.</p>
+        </div>
+        <div class="arc3-accordion__close-area">
+          Close
+          <div class="arc3-accordion__close-area-icon"><div class="arc3-accordion__horizontal-toggle-icon"></div></div>
+        </div>
+      </li>
+
+      <li class="arc3-accordion__item">
+        <div class="arc3-accordion__headline-content">
+          <div class="arc3-accordion__titles">
+            <div class="arc3-accordion__title"><b>Will the picture mug be able to withstand heat?</b></div>
+          </div>
+        </div>
+        <div class="arc3-accordion__toggle-icon">
+          <div class="arc3-accordion__horizontal-toggle-icon"></div>
+          <div class="arc3-accordion__vertical-toggle-icon"></div>
+        </div>
+        <div class="arc3-accordion__body">
+          <p>When you fill them with hot liquid, our mugs do start to heat up – as all mugs do. But our high-quality printing makes sure that the photo on the mug is resistant to heat damage, and the sturdy handle will remain cool so you can sip your beverages safely.</p>
+        </div>
+        <div class="arc3-accordion__close-area">
+          Close
+          <div class="arc3-accordion__close-area-icon"><div class="arc3-accordion__horizontal-toggle-icon"></div></div>
+        </div>
+      </li>
+
+      <li class="arc3-accordion__item">
+        <div class="arc3-accordion__headline-content">
+          <div class="arc3-accordion__titles">
+            <div class="arc3-accordion__title"><b>How do you print the photo on the mug?</b></div>
+          </div>
+        </div>
+        <div class="arc3-accordion__toggle-icon">
+          <div class="arc3-accordion__horizontal-toggle-icon"></div>
+          <div class="arc3-accordion__vertical-toggle-icon"></div>
+        </div>
+        <div class="arc3-accordion__body">
+          <p>During our custom mug printing process, your photos are embedded into the ceramic through a process known as sublimation that uses heat and special top-quality inks. Think of it like a big oven – essentially, your photos are baked into your personalised mugs so they won't come off.</p>
+        </div>
+        <div class="arc3-accordion__close-area">
+          Close
+          <div class="arc3-accordion__close-area-icon"><div class="arc3-accordion__horizontal-toggle-icon"></div></div>
+        </div>
+      </li>
+
+      <li class="arc3-accordion__item">
+        <div class="arc3-accordion__headline-content">
+          <div class="arc3-accordion__titles">
+            <div class="arc3-accordion__title"><b>How many photos can I print on my personalised photo mug?</b></div>
+          </div>
+        </div>
+        <div class="arc3-accordion__toggle-icon">
+          <div class="arc3-accordion__horizontal-toggle-icon"></div>
+          <div class="arc3-accordion__vertical-toggle-icon"></div>
+        </div>
+        <div class="arc3-accordion__body">
+          <p>You can add up to 20 pictures per personalised mug.</p>
+        </div>
+        <div class="arc3-accordion__close-area">
+          Close
+          <div class="arc3-accordion__close-area-icon"><div class="arc3-accordion__horizontal-toggle-icon"></div></div>
+        </div>
+      </li>
+
+      <li class="arc3-accordion__item">
+        <div class="arc3-accordion__headline-content">
+          <div class="arc3-accordion__titles">
+            <div class="arc3-accordion__title"><b>Can I wrap an image fully around the printed mug?</b></div>
+          </div>
+        </div>
+        <div class="arc3-accordion__toggle-icon">
+          <div class="arc3-accordion__horizontal-toggle-icon"></div>
+          <div class="arc3-accordion__vertical-toggle-icon"></div>
+        </div>
+        <div class="arc3-accordion__body">
+          <p>Yes – you can choose in the Editor whether you want to keep your photo on the mug on one side, or go panorama and wrap it all the way around.</p>
+        </div>
+        <div class="arc3-accordion__close-area">
+          Close
+          <div class="arc3-accordion__close-area-icon"><div class="arc3-accordion__horizontal-toggle-icon"></div></div>
+        </div>
+      </li>
+
+      <li class="arc3-accordion__item">
+        <div class="arc3-accordion__headline-content">
+          <div class="arc3-accordion__titles">
+            <div class="arc3-accordion__title"><b>Are these photo mugs suitable for promotional purposes or corporate branding?</b></div>
+          </div>
+        </div>
+        <div class="arc3-accordion__toggle-icon">
+          <div class="arc3-accordion__horizontal-toggle-icon"></div>
+          <div class="arc3-accordion__vertical-toggle-icon"></div>
+        </div>
+        <div class="arc3-accordion__body">
+          <p>Of course, our Editor and printing options make it easy to add logos, slogans, branding – you name it. A batch of custom mugs is a fun way to get your name out there, perfect for corporate gifts, giveaways, stocking the office kitchen with personalised coffee cups, tea mugs and more.</p>
+        </div>
+        <div class="arc3-accordion__close-area">
+          Close
+          <div class="arc3-accordion__close-area-icon"><div class="arc3-accordion__horizontal-toggle-icon"></div></div>
+        </div>
+      </li>
+
+      <li class="arc3-accordion__item">
+        <div class="arc3-accordion__headline-content">
+          <div class="arc3-accordion__titles">
+            <div class="arc3-accordion__title"><b>How to create a personalised mug?</b></div>
+          </div>
+        </div>
+        <div class="arc3-accordion__toggle-icon">
+          <div class="arc3-accordion__horizontal-toggle-icon"></div>
+          <div class="arc3-accordion__vertical-toggle-icon"></div>
+        </div>
+        <div class="arc3-accordion__body">
+          <p>Here's how to create your own printed mug in minutes:</p>
+          <ol>
+            <li>Pick your mug style (themed, heat-changing, etc.)</li>
+            <li>Choose a theme design for creative inspiration</li>
+            <li>Upload your photos</li>
+            <li>Add text for that extra personal touch</li>
+            <li>Preview your creation and add to cart</li>
+          </ol>
+        </div>
+        <div class="arc3-accordion__close-area">
+          Close
+          <div class="arc3-accordion__close-area-icon"><div class="arc3-accordion__horizontal-toggle-icon"></div></div>
+        </div>
+      </li>
+
+      <li class="arc3-accordion__item">
+        <div class="arc3-accordion__headline-content">
+          <div class="arc3-accordion__titles">
+            <div class="arc3-accordion__title"><b>What should I write for some extra personalisation on my mug?</b></div>
+          </div>
+        </div>
+        <div class="arc3-accordion__toggle-icon">
+          <div class="arc3-accordion__horizontal-toggle-icon"></div>
+          <div class="arc3-accordion__vertical-toggle-icon"></div>
+        </div>
+        <div class="arc3-accordion__body">
+          <p>Anything from cheeky quotes to heartfelt messages make for a nice touch to your personalised cup. A few ideas: "But first, coffee" – a classic for a custom coffee mug; "World's Best Dad" – Father's Day ready; "[Name]'s Mug – Hands Off" – a hit for personalised name mugs.</p>
+        </div>
+        <div class="arc3-accordion__close-area">
+          Close
+          <div class="arc3-accordion__close-area-icon"><div class="arc3-accordion__horizontal-toggle-icon"></div></div>
+        </div>
+      </li>
+
+      <li class="arc3-accordion__item">
+        <div class="arc3-accordion__headline-content">
+          <div class="arc3-accordion__titles">
+            <div class="arc3-accordion__title"><b>How long does it take to finish a personalised jigsaw?</b></div>
+          </div>
+        </div>
+        <div class="arc3-accordion__toggle-icon">
+          <div class="arc3-accordion__horizontal-toggle-icon"></div>
+          <div class="arc3-accordion__vertical-toggle-icon"></div>
+        </div>
+        <div class="arc3-accordion__body">
+          <p>If you've done photo jigsaws before, a good rule of thumb is that if you double the number of pieces, you increase the time needed by four. So if a 100-piece puzzle takes you 30 minutes, a 200-piece puzzle might take around two hours. It's suggested that a 500-piece puzzle will take the average person about five or six hours. Experienced puzzlers can complete a 1,000-piece personalised jigsaw in about 10 hours, but the average person might need up to 24 hours.</p>
+        </div>
+        <div class="arc3-accordion__close-area">
+          Close
+          <div class="arc3-accordion__close-area-icon"><div class="arc3-accordion__horizontal-toggle-icon"></div></div>
+        </div>
+      </li>
+
+      <li class="arc3-accordion__item">
+        <div class="arc3-accordion__headline-content">
+          <div class="arc3-accordion__titles">
+            <div class="arc3-accordion__title"><b>What type of photo will make a jigsaw puzzle more or less difficult?</b></div>
+          </div>
+        </div>
+        <div class="arc3-accordion__toggle-icon">
+          <div class="arc3-accordion__horizontal-toggle-icon"></div>
+          <div class="arc3-accordion__vertical-toggle-icon"></div>
+        </div>
+        <div class="arc3-accordion__body">
+          <p>Images with well-defined colours and areas of interest tend to make jigsaw puzzles easier, as you can assemble each part separately before putting the whole picture together. Good contrast in your photo helps, while murky and blurry images make things harder.</p>
+        </div>
+        <div class="arc3-accordion__close-area">
+          Close
+          <div class="arc3-accordion__close-area-icon"><div class="arc3-accordion__horizontal-toggle-icon"></div></div>
+        </div>
+      </li>
+
+      <li class="arc3-accordion__item">
+        <div class="arc3-accordion__headline-content">
+          <div class="arc3-accordion__titles">
+            <div class="arc3-accordion__title"><b>Can photo jigsaws be framed like photos or drawings?</b></div>
+          </div>
+        </div>
+        <div class="arc3-accordion__toggle-icon">
+          <div class="arc3-accordion__horizontal-toggle-icon"></div>
+          <div class="arc3-accordion__vertical-toggle-icon"></div>
+        </div>
+        <div class="arc3-accordion__body">
+          <p>Yes, you can definitely turn your puzzle into a stylish accessory for your home. Use a special puzzle adhesive on both sides to ensure it stays secure. It's a good idea to mount your photo jigsaw onto a foam board for added stability before sliding it into a frame. Hang with an extra hook if you're worried about the weight.</p>
+        </div>
+        <div class="arc3-accordion__close-area">
+          Close
+          <div class="arc3-accordion__close-area-icon"><div class="arc3-accordion__horizontal-toggle-icon"></div></div>
+        </div>
+      </li>
+
+      <li class="arc3-accordion__item">
+        <div class="arc3-accordion__headline-content">
+          <div class="arc3-accordion__titles">
+            <div class="arc3-accordion__title"><b>Can I create a photo puzzle on the app?</b></div>
+          </div>
+        </div>
+        <div class="arc3-accordion__toggle-icon">
+          <div class="arc3-accordion__horizontal-toggle-icon"></div>
+          <div class="arc3-accordion__vertical-toggle-icon"></div>
+        </div>
+        <div class="arc3-accordion__body">
+          <p>Absolutely. Make sure you have the app on your device, then log in to your Photobox account to save your photos – you can select them straight from your camera roll. Once saved, you can create your photo puzzle right away, or choose to create it on the app or your desktop later. Easy peasy.</p>
+        </div>
+        <div class="arc3-accordion__close-area">
+          Close
+          <div class="arc3-accordion__close-area-icon"><div class="arc3-accordion__horizontal-toggle-icon"></div></div>
+        </div>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<!-- Real ARC-3 arc3-newsletter-bar component. -->
+<div class="arc3-grey-background">
+  <div class="arc3-container">
+    <div class="arc3-newsletter-bar">
+      <p><strong>Sign up for our newsletter and get £5 off your next order!</strong></p>
+      <form class="arc3-form arc3-newsletter">
+        <div class="arc3-form__input-wrapper">
+          <input type="email" value="" placeholder="Your email address" required autocapitalize="off" autocorrect="off">
+          <button class="arc3-btn-secondary arc3-form__inline-btn arc3-newsletter--subscribe" type="button" role="button">Submit</button>
+          <small class="arc3-form-message">
+            <span class="error">Please fill in valid data</span>
+            <span class="success">Successfully submitted</span>
+            <span class="alert">Alert message</span>
+          </small>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Real ARC-3 arc3-footer component, content matched to the live
+     photobox.co.uk footer (link columns, payment/sustainability
+     logos, social links, app badges) — replaces the placeholder
+     copyright-only footer this prototype started with. -->
+<div class="arc3-footer">
+  <div class="arc3-container">
+    <div class="arc3-grid">
+      <div class="arc3-cell arc3-cell--3-col-desktop arc3-cell--6-col-tablet arc3-cell--2-col-phone">
+        <h5 class="arc3-footer__title">Products</h5>
+        <ul class="arc3-typo-ul-no-style arc3-footer__anchor">
+          <li><a href="https://www.photobox.co.uk/photo-books" target="_blank" rel="noopener noreferrer">Photo books</a></li>
+          <li><a href="https://www.photobox.co.uk/photo-books/templates" target="_blank" rel="noopener noreferrer">Themed photo books</a></li>
+          <li><a href="https://www.photobox.co.uk/wall-art" target="_blank" rel="noopener noreferrer">Wall art</a></li>
+          <li><a href="https://www.photobox.co.uk/wall-art/photo-collage" target="_blank" rel="noopener noreferrer">Photo collage prints</a></li>
+          <li><a href="https://www.photobox.co.uk/wall-art/framed-photo-collage" target="_blank" rel="noopener noreferrer">Framed photo collage prints</a></li>
+          <li><a href="https://www.photobox.co.uk/photo-printing" target="_blank" rel="noopener noreferrer">Photo printing</a></li>
+          <li><a href="https://www.photobox.co.uk/personalised-cards" target="_blank" rel="noopener noreferrer">Personalised cards</a></li>
+          <li><a href="https://www.photobox.co.uk/personalised-calendars" target="_blank" rel="noopener noreferrer">Personalised calendars</a></li>
+          <li><a href="https://www.photobox.co.uk/personalised-mugs" target="_blank" rel="noopener noreferrer">Personalised mugs</a></li>
+          <li><a href="https://www.photobox.co.uk/gift-card" target="_blank" rel="noopener noreferrer">Gift vouchers</a></li>
+          <li><a href="https://www.photobox.co.uk/photo-products" target="_blank" rel="noopener noreferrer">All photo products</a></li>
+        </ul>
+      </div>
+      <div class="arc3-cell arc3-cell--3-col-desktop arc3-cell--6-col-tablet arc3-cell--2-col-phone">
+        <h5 class="arc3-footer__title">Favourites</h5>
+        <ul class="arc3-typo-ul-no-style arc3-footer__anchor">
+          <li><a href="https://www.photobox.co.uk/wall-art/poster-printing" target="_blank" rel="noopener noreferrer">Poster printing</a></li>
+          <li><a href="https://www.photobox.co.uk/wall-art/canvas-prints" target="_blank" rel="noopener noreferrer">Canvas prints</a></li>
+          <li><a href="https://www.photobox.co.uk/wall-art/mounted-prints" target="_blank" rel="noopener noreferrer">Mounted prints</a></li>
+          <li><a href="https://www.photobox.co.uk/wall-art/aluminium-prints" target="_blank" rel="noopener noreferrer">Aluminium prints</a></li>
+          <li><a href="https://www.photobox.co.uk/wall-art/acrylic-prints" target="_blank" rel="noopener noreferrer">Acrylic prints</a></li>
+          <li><a href="https://www.photobox.co.uk/personalised-cards/thank-you" target="_blank" rel="noopener noreferrer">Thank you cards</a></li>
+          <li><a href="https://www.photobox.co.uk/personalised-cards/invitations" target="_blank" rel="noopener noreferrer">Personalised invitations</a></li>
+          <li><a href="https://www.photobox.co.uk/personalised-cards/wedding" target="_blank" rel="noopener noreferrer">Wedding Cards</a></li>
+          <li><a href="https://www.photobox.co.uk/personalised-cards/christmas" target="_blank" rel="noopener noreferrer">Christmas cards</a></li>
+          <li><a href="https://www.photobox.co.uk/personalised-cards/new-year" target="_blank" rel="noopener noreferrer">New year cards</a></li>
+          <li><a href="https://www.photobox.co.uk/personalised-gifts" target="_blank" rel="noopener noreferrer">Personalised gifts</a></li>
+          <li><a href="https://www.photobox.co.uk/photo-books/templates/wedding" target="_blank" rel="noopener noreferrer">Wedding Photo Albums</a></li>
+        </ul>
+      </div>
+      <div class="arc3-cell arc3-cell--3-col-desktop arc3-cell--6-col-tablet arc3-cell--2-col-phone">
+        <h5 class="arc3-footer__title">Help</h5>
+        <ul class="arc3-typo-ul-no-style arc3-footer__anchor">
+          <li><a href="https://www.photobox.co.uk/price-overview" target="_blank" rel="noopener noreferrer nofollow">Price overview</a></li>
+          <li><a href="https://service.storiogroup.com/hc/en-gb/articles/23334421139857-Do-you-have-any-special-prices-for-large-orders" target="_blank" rel="noopener noreferrer nofollow">Bulk orders</a></li>
+          <li><a href="https://www.photobox.co.uk/postage-packaging" target="_blank" rel="noopener noreferrer nofollow">Shipping costs</a></li>
+          <li><a href="https://www.photobox.co.uk/delivery-times" target="_blank" rel="noopener noreferrer nofollow">Delivery times</a></li>
+          <li><a href="https://myaccount.photobox.co.uk/orders" target="_blank" rel="noopener noreferrer nofollow">Order status</a></li>
+          <li><a href="https://www.photobox.co.uk/discount-codes" target="_blank" rel="noopener noreferrer">Discount codes</a></li>
+          <li><a href="https://www.photobox.co.uk/black-friday" target="_blank" rel="noopener noreferrer">Black Friday</a></li>
+          <li><a href="https://www.photobox.co.uk/student-discount" target="_blank" rel="noopener noreferrer">Student discount</a></li>
+          <li><a href="https://service.storiogroup.com/hc/en-gb" target="_blank" rel="noopener noreferrer nofollow">Frequently asked questions</a></li>
+          <li><a href="https://service.storiogroup.com/hc/en-gb/p/contact" target="_blank" rel="noopener noreferrer nofollow">Contact</a></li>
+        </ul>
+      </div>
+      <div class="arc3-cell arc3-cell--3-col-desktop arc3-cell--6-col-tablet arc3-cell--2-col-phone">
+        <h5 class="arc3-footer__title">About us</h5>
+        <ul class="arc3-typo-ul-no-style arc3-footer__anchor">
+          <li><a href="https://www.photobox.co.uk/about" target="_blank" rel="noopener noreferrer nofollow">About us</a></li>
+          <li><a href="https://www.photobox.co.uk/sustainability" target="_blank" rel="noopener noreferrer nofollow">Sustainability</a></li>
+          <li><a href="https://service.storiogroup.com/hc/en-gb/articles/23334331001617" target="_blank" rel="noopener noreferrer nofollow">Corporate partnerships</a></li>
+          <li><a href="https://jobs.lever.co/storiogroup" target="_blank" rel="noopener noreferrer nofollow">Careers</a></li>
+          <li><a href="https://www.photobox.co.uk/blog" target="_blank" rel="noopener noreferrer">Blog</a></li>
+        </ul>
+      </div>
+      <div class="arc3-cell arc3-cell--3-col-desktop arc3-cell--6-col-tablet arc3-cell--2-col-phone">
+        <h5 class="arc3-footer__title">Payment options</h5>
+        <div class="footer-payment-row">
+          <img class="arc3-payment" src="https://arc3.sf.albelli.com/dist/cdn/img/payment-logos/mc.svg" alt="MasterCard">
+          <img class="arc3-payment" src="https://arc3.sf.albelli.com/dist/cdn/img/payment-logos/visa.svg" alt="VISA">
+          <img class="arc3-payment" src="https://arc3.sf.albelli.com/dist/cdn/img/payment-logos/paypal.svg" alt="PayPal">
+          <img class="arc3-payment" src="https://arc3.sf.albelli.com/dist/cdn/img/payment-logos/applepay.svg" alt="Apple Pay">
+          <img class="arc3-payment" src="https://arc3.sf.albelli.com/dist/cdn/img/payment-logos/googlepay.svg" alt="Google Pay">
+          <img class="arc3-payment" src="https://arc3.sf.albelli.com/dist/cdn/img/payment-logos/maestro.svg" alt="Maestro">
+        </div>
+      </div>
+      <div class="arc3-cell arc3-cell--3-col-desktop arc3-cell--6-col-tablet arc3-cell--2-col-phone">
+        <h5 class="arc3-footer__title">Sustainability</h5>
+        <div class="arc3-footer__sustainability_links">
+          <a href="https://www.photobox.co.uk/sustainability" target="_blank" rel="noopener noreferrer"><img class="arc3-sustainability--fsc-gb" src="https://arc3.sf.albelli.com/dist/cdn/img/sustainability/fsc_gb.jpg" alt="FSC"></a>
+          <a href="https://www.photobox.co.uk/sustainability" target="_blank" rel="noopener noreferrer"><img class="arc3-sustainability--red" src="https://arc3.sf.albelli.com/dist/cdn/img/sustainability/red.png" alt="Red"></a>
+        </div>
+      </div>
+      <div class="arc3-cell arc3-cell--3-col-desktop arc3-cell--6-col-tablet arc3-cell--2-col-phone">
+        <h5 class="arc3-footer__title">Follow us on</h5>
+        <div class="arc3-footer__social-icons">
+          <a target="_blank" rel="noopener noreferrer" href="https://www.facebook.com/PhotoboxUK"><i class="arc3-icon icon-facebook icon--small icon--background-color-brand-cyan">facebook</i></a>
+          <a target="_blank" rel="noopener noreferrer" href="https://www.pinterest.co.uk/PhotoBoxUK/"><i class="arc3-icon icon-pinterest icon--small icon--background-color-brand-cyan">pinterest</i></a>
+          <a target="_blank" rel="noopener noreferrer" href="https://www.instagram.com/photoboxuk/"><i class="arc3-icon icon-instagram icon--small icon--background-color-brand-cyan">instagram</i></a>
+        </div>
+      </div>
+      <div class="arc3-cell arc3-cell--3-col-desktop arc3-cell--6-col-tablet arc3-cell--2-col-phone">
+        <h5 class="arc3-footer__title">Discover our apps</h5>
+        <div>
+          <a href="https://apps.apple.com/gb/app/id574408353" target="_blank" rel="noopener noreferrer"><img class="arc3-app-store-btn" src="https://arc3.sf.albelli.com/dist/cdn/img/app-badge-apple-en.svg" alt="app store ios"></a>
+          <a href="https://play.google.com/store/apps/details?id=com.photobox.android&hl=en-GB" target="_blank" rel="noopener noreferrer"><img class="arc3-app-store-btn" src="https://arc3.sf.albelli.com/dist/cdn/img/app-badge-android-en.svg" alt="app store android"></a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="arc3-footer__end-row">
+    <div class="arc3-container">
+      <div class="arc3-grid">
+        <div class="arc3-cell arc3-cell--4-col arc3-cell--3-col-tablet arc3-cell--2-col-phone">
+          <p>Photobox © 2026</p>
+        </div>
+        <div class="arc3-cell arc3-cell--8-col arc3-cell--9-col-tablet arc3-cell--12-col-phone">
+          <ul class="arc3-typo-ul-no-style arc3-footer__anchor arc3-footer__horizontal-menu">
+            <li><a href="https://www.photobox.co.uk/privacy-policy" target="_blank" rel="noopener noreferrer">Privacy policy</a></li>
+            <li><a href="https://www.photobox.co.uk/cookie-policy" target="_blank" rel="noopener noreferrer">Cookie policy</a></li>
+            <li><a href="https://www.photobox.co.uk/terms-conditions" target="_blank" rel="noopener noreferrer">Terms &amp; Conditions</a></li>
+            <li><a href="https://www.photobox.co.uk/modern-slavery-statement" target="_blank" rel="noopener noreferrer">Modern Slavery Statement</a></li>
+            <li><a href="https://service.storiogroup.com/hc/en-gb/p/contact" target="_blank" rel="noopener noreferrer nofollow">Contact</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="js/app.js?v=143"></script>
+<script>
+  /* ARC-3 nav behaviour — mobile accordion, hover-intent dropdowns.
+     initVersionSwitcher and initPrototypeBar are handled by app.js. */
+  (function () {
+    "use strict";
+
+    function initExclusiveMobileAccordion() {
+      var toggles = document.querySelectorAll(".js-accordion-toggle");
+      toggles.forEach(function (t) {
+        t.addEventListener("change", function () {
+          if (t.checked) {
+            toggles.forEach(function (other) {
+              if (other !== t) other.checked = false;
+            });
+          }
+        });
+      });
+    }
+
+    function initMenuAccountExclusion() {
+      var mainMenu = document.querySelector('.arc3-menu-toggle.main-menu');
+      var accountMenu = document.querySelector('.arc3-menu-toggle.account-menu');
+      if (!mainMenu || !accountMenu) return;
+      mainMenu.addEventListener('change', function () {
+        if (mainMenu.checked) accountMenu.checked = false;
+      });
+      accountMenu.addEventListener('change', function () {
+        if (accountMenu.checked) mainMenu.checked = false;
+      });
+    }
+
+    function initClickOutsideCloses() {
+      var root = document.querySelector('.arc3-menu');
+      var mainMenu = document.querySelector('.arc3-menu-toggle.main-menu');
+      var accountMenu = document.querySelector('.arc3-menu-toggle.account-menu');
+      if (!root) return;
+      document.addEventListener('click', function (e) {
+        if (root.contains(e.target)) return;
+        if (mainMenu) mainMenu.checked = false;
+        if (accountMenu) accountMenu.checked = false;
+      });
+    }
+
+    function initHoverIntentDropdowns() {
+      var dropdownItems = document.querySelectorAll(
+        ".arc3-menu__main__nav > li.arc3-menu__dropdown, .arc3-menu__bar__nav > li.arc3-menu__dropdown"
+      );
+      var allTopLevelItems = document.querySelectorAll(
+        ".arc3-menu__main__nav > li, .arc3-menu__bar__nav > li"
+      );
+      var CLOSE_DELAY_MS = 450;
+      var openItem = null;
+      var closeTimer;
+
+      function close(item) {
+        item.classList.remove("is-open");
+        if (openItem === item) openItem = null;
+      }
+
+      allTopLevelItems.forEach(function (item) {
+        item.addEventListener("mouseenter", function () {
+          clearTimeout(closeTimer);
+          if (openItem && openItem !== item) close(openItem);
+          if (item.classList.contains("arc3-menu__dropdown")) {
+            item.classList.add("is-open");
+            openItem = item;
+          }
+        });
+      });
+
+      dropdownItems.forEach(function (item) {
+        item.addEventListener("mouseleave", function () {
+          closeTimer = setTimeout(function () { close(item); }, CLOSE_DELAY_MS);
+        });
+      });
+    }
+
+    /* Keyboard navigation and ARIA for desktop dropdowns and mobile accordion. */
+    function initKeyboardNav() {
+      var MOBILE_BP = 574;
+
+      /* Desktop: open dropdowns on keyboard focus, close on blur/Escape,
+         jump into panel on ArrowDown. MutationObserver keeps aria-expanded
+         honest for hover-triggered opens too. */
+      var desktopDropdowns = document.querySelectorAll(
+        ".arc3-menu__main__nav > li.arc3-menu__dropdown, .arc3-menu__bar__nav > li.arc3-menu__dropdown"
+      );
+      desktopDropdowns.forEach(function (li) {
+        var trigger = li.querySelector(":scope > a");
+        var panel   = li.querySelector(":scope > ul");
+        if (!trigger || !panel) return;
+
+        trigger.setAttribute("aria-haspopup", "true");
+        trigger.setAttribute("aria-expanded", "false");
+
+        new MutationObserver(function () {
+          trigger.setAttribute("aria-expanded", li.classList.contains("is-open") ? "true" : "false");
+        }).observe(li, { attributes: true, attributeFilter: ["class"] });
+
+        trigger.addEventListener("focus", function () {
+          if (window.innerWidth <= MOBILE_BP) return;
+          li.classList.add("is-open");
+        });
+
+        li.addEventListener("focusout", function (e) {
+          if (!li.contains(e.relatedTarget)) li.classList.remove("is-open");
+        });
+
+        li.addEventListener("keydown", function (e) {
+          if (e.key === "Escape" && li.classList.contains("is-open")) {
+            li.classList.remove("is-open");
+            trigger.focus();
+          }
+          if (e.key === "ArrowDown" && document.activeElement === trigger && window.innerWidth > MOBILE_BP) {
+            e.preventDefault();
+            var first = panel.querySelector("a");
+            if (first) { li.classList.add("is-open"); first.focus(); }
+          }
+        });
+      });
+
+      /* Mobile: annotate each accordion checkbox for screen readers and
+         intercept Enter/Space on the visible link so users don't need to
+         find the invisible checkbox overlay. */
+      document.querySelectorAll(".js-accordion-toggle").forEach(function (cb) {
+        var li   = cb.closest("li");
+        var link = li && li.querySelector(":scope > a");
+        if (!li || !link) return;
+
+        var labelText = (link.querySelector("span") || link).textContent.trim();
+        cb.setAttribute("aria-label", labelText + " submenu");
+        cb.setAttribute("aria-expanded", "false");
+        cb.addEventListener("change", function () {
+          cb.setAttribute("aria-expanded", cb.checked ? "true" : "false");
+        });
+
+        link.addEventListener("keydown", function (e) {
+          if (window.innerWidth > MOBILE_BP) return;
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            cb.checked = !cb.checked;
+            cb.dispatchEvent(new Event("change"));
+          }
+        });
+      });
+    }
+
+    initExclusiveMobileAccordion();
+    initMenuAccountExclusion();
+    initClickOutsideCloses();
+    initHoverIntentDropdowns();
+    initKeyboardNav();
+  })();
+</script>
+<script>
+  /* FAQ accordion — Tabs/Accordion/etc. aren't auto-initialised by the
+     bundle (only Menu, ScrollLink and Modal are), so it needs its own
+     `new window.ARC3.Accordion()` call. Deferred to window "load" since
+     arc.bundle.js itself loads with `defer` and may not have run yet
+     when this inline script is parsed. */
+  window.addEventListener("load", function () {
+    if (window.ARC3 && window.ARC3.Accordion) {
+      new window.ARC3.Accordion();
+    }
+  });
+</script>
+<script>
+  (function () {
+    var PAGE_URL = encodeURIComponent(window.location.href);
+    var PAGE_TITLE = encodeURIComponent(document.title);
+    var btn = document.getElementById('share-btn');
+    var popover = document.getElementById('share-popover');
+    var closeBtn = popover.querySelector('.share-popover__close');
+    var copyBtn = document.getElementById('share-copy');
+
+    document.getElementById('share-facebook').href =
+      'https://www.facebook.com/sharer/sharer.php?u=' + PAGE_URL;
+    document.getElementById('share-pinterest').href =
+      'https://pinterest.com/pin/create/button/?url=' + PAGE_URL + '&description=' + PAGE_TITLE;
+    document.getElementById('share-whatsapp').href =
+      'https://wa.me/?text=' + PAGE_TITLE + '%20' + PAGE_URL;
+
+    function openPopover() {
+      if (navigator.share) {
+        navigator.share({ title: document.title, url: window.location.href }).catch(function () {});
+        return;
+      }
+      popover.hidden = false;
+      btn.setAttribute('aria-expanded', 'true');
+      closeBtn.focus();
+    }
+    function closePopover() {
+      popover.hidden = true;
+      btn.setAttribute('aria-expanded', 'false');
+      btn.focus();
+    }
+
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      popover.hidden ? openPopover() : closePopover();
+    });
+    closeBtn.addEventListener('click', closePopover);
+    document.addEventListener('click', function (e) {
+      if (!popover.hidden && !popover.contains(e.target) && e.target !== btn) closePopover();
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && !popover.hidden) closePopover();
+    });
+
+    copyBtn.addEventListener('click', function () {
+      navigator.clipboard.writeText(window.location.href).then(function () {
+        copyBtn.classList.add('copied');
+        copyBtn.querySelector('span').textContent = 'Copied!';
+        setTimeout(function () {
+          copyBtn.classList.remove('copied');
+          copyBtn.querySelector('span').textContent = 'Copy link';
+        }, 2000);
+      });
+    });
+  })();
+</script>
+
+<!-- Review modal -->
+<div class="review-modal-overlay" id="review-modal-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="review-modal-title">
+  <div class="review-modal">
+    <button class="review-modal-close" id="review-modal-close" aria-label="Close review"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    <span class="arc3-star-rating arc3-star-rating--5" aria-hidden="true"></span>
+    <h3 class="review-modal-title" id="review-modal-title"></h3>
+    <p class="review-modal-body" id="review-modal-body"></p>
+    <div class="review-modal-attr" id="review-modal-attr"></div>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,2439 @@
+/* =============================================================
+   Photobox — "Thoughtful Gifting" landing page (concept prototype)
+   Desktop-only. Vanilla CSS, no build step.
+   ============================================================= */
+
+/* ---------- Reset & base ---------- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* Photobox brand font, self-hosted (aligns the prototype with the live site).
+   Only two static weights exist, so each face is registered with a weight
+   RANGE — the browser maps every requested font-weight (400/500/600 → regular,
+   700/800 → bold) to the nearest real face rather than synthesising a bold. */
+@font-face {
+  font-family: "Brandon Text";
+  src: url("../assets/fonts/brandon-text-a.woff2") format("woff2");
+  font-weight: 100 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Brandon Text";
+  src: url("../assets/fonts/brandon-text-a-bold.woff2") format("woff2");
+  font-weight: 700 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  /* Photobox.co.uk brand palette (rebrand).
+     The --coral* / --navy token NAMES are kept to limit churn but now hold
+     Photobox GREEN values: brand green for accents/CTAs, deep green surfaces. */
+  --navy:       #0a4a41;   /* deep brand green — dark sections: hero, how-it-works, footer */
+  --navy-2:     #0c574d;   /* subtle deep-green panel tint */
+  --cream:      #FCF6ED;   /* light sections: occasions, testimonials */
+  --cream-2:    #FCF6ED;   /* lighter cream wash */
+  --coral:      #007377;   /* PHOTOBOX BRAND GREEN — CTAs, accents, active states, links */
+  --coral-dark: #005c5f;   /* brand green hover / pressed */
+  --coral-tint: #e0f2f2;   /* soft brand-green wash */
+  --mint:       #7fd3c1;   /* light brand accent for use on deep green */
+  --brand-bright: #007377; /* brighter brand green — pops on deep green (hero CTA) */
+  --green:      #2f9e6b;   /* delivery ticks (success green, distinct from brand teal) */
+  --green-tint: #e4f4ec;
+  --sale-orange: #e2672d;  /* matches the live site's own discount-badge orange —
+                               outlined tag on white, the only warm accent on a card
+                               (every brand accent is green post-rebrand, so a price
+                               event needs a hue nothing else owns). */
+  --sale-tint:  #fbe6e0;   /* filled-pill promo tag variant — the stakeholder A/B
+                               alternative toggled in by .promo-style-b. */
+  --sale-dark:  #8f2410;   /* text on --sale-tint, ~7.2:1 contrast. */
+  --ink:        #1c2333;   /* dark text on light bg */
+  --grey:       #6b7080;   /* muted body copy */
+  --grey-dark:  #4a4f5c;   /* darker muted — WCAG AA contrast (~7.6:1) for small labels */
+  --grey-soft:  #9aa0ad;   /* lighter muted */
+  --white:      #ffffff;
+  --line:       #ece6df;   /* hairline on light */
+  --line-dark:  rgba(255,255,255,0.14);
+
+  --radius:     16px;
+  --radius-lg:  26px;
+  --radius-pill:999px;
+  --shadow-sm:  0 6px 18px rgba(20,24,40,0.08);
+  --shadow:     0 16px 40px rgba(20,24,40,0.12);
+  --maxw:       1440px;
+  --font: "Brandon Text", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-display: "Brandon Text", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font);
+  color: var(--ink);
+  background: var(--white);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+img { display: block; max-width: 100%; }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; cursor: pointer; border: none; background: none; }
+
+/* ---------- Layout helpers ---------- */
+/* Content gutter: 42px on both sides, matching the overrides below that
+   push the ARC-3 nav logo and category-nav items to the same 42px edge. */
+.container { max-width: var(--maxw); margin: 0 auto; padding: 0 42px; }
+
+/* Align ARC-3 nav chrome to the same 42px gutter as content sections.
+   ARC-3 defaults: logo padding-left 16px; last utility-nav li padding-right
+   20px; category-nav-container padding-left 8px (+ 8px button padding = 16px).
+   All three need nudging so left/right edges track our 42px content grid.
+   Scoped to ≥601px: on mobile ARC-3 centres the logo in its own layout and
+   these overrides push it out of position. */
+@media (min-width: 811px) {
+  .arc3-menu__bar__logo                     { padding-left:  42px !important; }
+  .arc3-menu__bar__nav > li:last-child      { padding-right: 42px !important; }
+  .arc3-menu__main__nav-container           { padding-left:  34px !important;
+                                              padding-right: 34px !important; }
+  /* Keep hamburger hidden on desktop */
+  .arc3-menu__bar__mobile-btn               { display: none !important; }
+}
+.section   { padding: 184px 0; }
+
+
+/* Section background variants + their default text colour */
+.bg-navy  { background: var(--navy);  color: var(--white); }
+.bg-cream { background: var(--cream); color: var(--ink); }
+.bg-white { background: var(--white); color: var(--ink); }
+.bg-tint  { background: linear-gradient(180deg, var(--cream-2) 0%, var(--coral-tint) 100%);
+            color: var(--ink); }
+
+/* ---------- Eyebrow + heading rhythm ---------- */
+.eyebrow {
+  display: inline-block;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  color: var(--coral);
+  margin-bottom: 16px;
+}
+/* On deep-green sections, the eyebrow needs a light brand accent for contrast */
+.bg-navy .eyebrow { color: var(--mint); }
+.heading {
+  font-family: var(--font-display);
+  font-size: 46px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.08;
+  color: inherit !important;
+}
+.subcopy {
+  font-size: 18px;
+  color: var(--grey);
+  max-width: 620px;
+  margin-top: 16px;
+}
+.bg-navy .subcopy { color: rgba(255,255,255,0.72); }
+.section-head { margin-bottom: 44px; }
+
+/* =============================================================
+   Nav — Photobox.co.uk style: two rows (utility bar + category row)
+   ============================================================= */
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--white);
+}
+
+/* Photobox logo image */
+.logo {
+  display: inline-flex;
+  align-items: center;
+}
+.logo-img {
+  height: 34px;
+  width: auto;
+  display: block;
+}
+.logo-img-footer {
+  filter: brightness(0) invert(1);
+  opacity: 0.9;
+}
+
+/* Mobile-only top bar + drawer — hidden on desktop; see the phone
+   breakpoint for the mobile layout/behaviour. Markup always in the DOM
+   (drawer content is a flat repeat of Row 1 + Row 2's links) but only
+   visible/interactive under the phone breakpoint. */
+.nav-mobile-bar,
+.mobile-menu-backdrop,
+.mobile-menu-panel { display: none; }
+
+/* Row 1 — utility bar */
+.nav-utility { border-bottom: 1px solid var(--line); }
+.nav-utility-inner {
+  height: 76px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.nav-utility-links { display: flex; align-items: stretch; }
+.nav-utility-links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 22px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--coral);
+  transition: color 0.15s ease;
+}
+.nav-utility-links a:hover { color: var(--coral-dark); }
+.nav-utility-links a svg { width: 20px; height: 20px; }
+.nav-div { width: 1px; background: var(--line); margin: 6px 0; }
+
+/* Row 2 — category nav */
+.nav-cats { border-bottom: 1px solid var(--line); }
+.nav-cats-inner {
+  height: 54px;
+  display: flex;
+  align-items: center;
+  gap: 30px;
+}
+.nav-cats .nav-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--coral);
+  transition: color 0.15s ease;
+}
+.nav-cats .nav-trigger:hover { color: var(--coral-dark); }
+.nav-cats .chev { width: 13px; height: 13px; opacity: 0.85; transition: transform 0.15s ease; }
+.nav-item.is-open .chev { transform: rotate(180deg); }
+
+/* Mega-menu dropdown — one per top-level item. Opens on hover (desktop
+   mouse) or on tap via .is-open (touch/keyboard), toggled in
+   initNavDropdowns (js/app.js). Plain vertical link list, matching
+   photobox.co.uk's own category dropdowns. */
+.nav-item { position: relative; }
+.nav-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 60;
+  min-width: 230px;
+  margin-top: 1px;
+  padding: 10px 0;
+  list-style: none;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-6px);
+  transition: opacity 0.15s ease, transform 0.15s ease, visibility 0s linear 0.15s;
+}
+.nav-item:hover .nav-dropdown,
+.nav-item.is-open .nav-dropdown {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition: opacity 0.15s ease, transform 0.15s ease, visibility 0s;
+}
+.nav-dropdown li { display: block; }
+.nav-dropdown a {
+  display: block;
+  padding: 9px 20px;
+  font-size: 14.5px;
+  font-weight: 500;
+  color: var(--ink);
+  white-space: nowrap;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+.nav-dropdown a:hover { background: var(--cream-2); color: var(--coral); }
+@media (prefers-reduced-motion: reduce) {
+  .nav-dropdown { transition: none; }
+}
+
+/* Mega-menu variant — "Personalised gifts": three columns (product /
+   recipient / occasion) instead of one plain list. */
+.nav-dropdown--mega {
+  display: flex;
+  align-items: flex-start;
+  min-width: 0;
+  padding: 18px 0;
+  gap: 8px;
+}
+.nav-col { min-width: 190px; }
+.nav-col + .nav-col { border-left: 1px solid var(--line); }
+.nav-col-heading {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--grey-soft);
+  padding: 0 20px 8px;
+}
+.nav-col ul { list-style: none; }
+
+/* "View all" link at the foot of a nav column — a catch-all action,
+   not another product, so it reads visually distinct from the list
+   above it: separated by a rule, bold, brand-coloured. */
+.nav-view-all {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid var(--line);
+}
+.nav-view-all a {
+  font-weight: 700;
+  color: var(--coral);
+}
+.nav-view-all a:hover { color: var(--coral-dark); }
+
+/* =============================================================
+   Section 1 — Hero
+   ============================================================= */
+.hero-wrap {
+  padding: 0;
+  position: relative;
+  /* Backstop behind the panel — hero-wrap is already 100vw, so this
+     covers the left gutter on its own, no ::before tricks needed. */
+  background: #dae8f2;
+}
+/* Full width by UNCAPPING THE CONTAINER, not by bleeding the image out of it.
+   .arc3-banner-image is a grid item pinned to grid-column 4/8; a negative
+   margin-right does grow its box (getBoundingClientRect reports the wider
+   box) but the engine still won't paint or hit-test the item outside its grid
+   track, so the photo stopped dead at the container's 1440px edge and the
+   gutter kept showing hero-wrap's background. Every "extend the image"
+   variant — explicit width, right: auto, inline !important, negative margin —
+   failed for that same reason.
+
+   Dropping the container's max-width instead lets the grid itself span the
+   viewport, so column 4/8 genuinely reaches the right edge and the image
+   fills it with no overrides at all. */
+.hero-wrap .arc3-container {
+  max-width: none !important;
+}
+/* Lock the panel to its boxed width (3/7 × 1440px = 617px) so the
+   panel/image seam — and the wave that sits on it — doesn't move as the
+   viewport grows. The image takes 1fr (all remaining viewport). Matching
+   panel column reassignment keeps ARC-3's grid-column: 4/8 on the image
+   from fighting the new 2-track template. */
+.hero-wrap .hero.arc3-image-and-panel {
+  grid-template-columns: calc(max(0px, (100vw - 1440px) / 2) + 3 / 7 * 1440px) 1fr !important;
+}
+.hero-wrap .hero .arc3-panel {
+  grid-column: 1 / 2 !important;
+}
+.hero-wrap .hero .arc3-banner-image {
+  grid-column: 2 / 3 !important;
+}
+.hero.arc3-image-and-panel {
+  position: relative;
+  background-color: #dae8f2 !important;
+}
+.hero .arc3-banner-image {
+  position: relative;
+  min-height: 360px;
+  /* The --text-position-left-for-wide-tablet-up modifier doesn't split
+     the grid columns for us here, so force it: panel keeps its own
+     1/4 span, image takes the remaining 4/8 (matches the live site's
+     4-column image / 3-column panel split). */
+  grid-column: 4 / 8 !important;
+}
+/* Wavy seam where the panel meets the photo — same idea as the live
+   site's curve-mask/image-blob campaign banner, but built as a fixed
+   -width overlay (not a mask on the image itself) so the curve's shape
+   stays identical whether the hero is boxed or toggled full-width;
+   masking the image directly made the curve stretch with its width. */
+.hero-wave {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -1px;
+  width: 60px;
+  background: #dae8f2;
+  -webkit-mask-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 100' preserveAspectRatio='none'%3E%3Cpath d='M0 0 C0 40, 6 55, 5 100 L0 100 Z' fill='%23000'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 100' preserveAspectRatio='none'%3E%3Cpath d='M0 0 C0 40, 6 55, 5 100 L0 100 Z' fill='%23000'/%3E%3C/svg%3E");
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  pointer-events: none;
+}
+/* Below 768px the panel and image stack (arc.css drops the grid to
+   block) — the wave only makes sense as a seam between the two side by
+   side, so hide it once the image is on top with nothing to its left. */
+@media (max-width: 767px) {
+  .hero-wave { display: none; }
+}
+.hero-media {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: right center;
+  display: block;
+}
+.hero-copy {
+  /* ARC's default .arc3-panel margin (24px on every side) was the real
+     source of the vertical offset from the logo/nav above — cancel it.
+     Horizontally, match the nav logo's own left edge: ARC-3's nav bar
+     wraps its content in a max-width: 1440px, centred .arc3-container —
+     the logo then sits 16px inside that. Below 1440px the container
+     fills the viewport, so the logo (and this) sit at a flat 16px; above
+     it, the container re-centres and both need the same (100vw - 1440px)/2
+     offset added to track it. */
+  margin: 0 !important;
+  padding: 96px 56px 96px max(42px, calc((100vw - 1440px) / 2 + 42px)) !important;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: #dae8f2 !important;
+  color: #1f386e !important;
+}
+.hero-video {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  opacity: 1;
+  transition: opacity 0.5s ease;
+}
+.hero-play-btn {
+  position: absolute;
+  bottom: 24px;
+  right: 32px;
+  z-index: 2;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease;
+  padding: 0;
+  border: none;
+  cursor: pointer;
+}
+.hero-play-btn:hover { background: rgba(0,0,0,0.55); }
+.hero-play-btn .icon-play { display: none; }
+.hero-play-btn.is-paused .icon-play { display: block; }
+.hero-play-btn.is-paused .icon-pause { display: none; }
+.pill-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  background: rgba(0,0,0,0.4);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: var(--mint);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 8px 16px;
+  border-radius: var(--radius-pill);
+}
+.pill-eyebrow .dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--mint);
+}
+.hero-copy .eyebrow { margin-bottom: 6px; }
+.hero h1 {
+  font-family: var(--font-display);
+  font-size: 46px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.04;
+  margin: 0 0 22px;
+  color: #1f386e !important;
+}
+.hero-sub {
+  font-size: 19px;
+  color: #1f386e;
+  max-width: 520px;
+  margin-bottom: 32px;
+}
+.hero-ctas { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+/* Both hero CTAs are now real ARC-3 buttons (arc3-btn / arc3-btn-secondary)
+   rather than the hand-rolled .btn / .btn-coral / .btn-outline this file
+   used to approximate them with — colour, border and hover on both come
+   from arc.css, untouched. Only padding/font-size are nudged here so the
+   two sit at the same height as a pair; arc.css's own defaults for the two
+   components don't match each other's box height out of the box.
+
+   Both override rules share their target's 0-1-0 specificity with arc.css's
+   own rule for that exact class, and arc.css loads after styles.css in
+   <head> — so at equal specificity arc.css would win purely on source
+   order (same trap the hero image fix hit). !important sidesteps that. */
+/* 17px not 15px: the secondary button's 2px border eats into its box-sizing:
+   border-box padding, so matching padding numbers alone left the borderless
+   primary 4px shorter. */
+/* One consistent padding/font-size scale for every arc3-btn on this
+   page, borderless and bordered variants sized 2px apart top/bottom
+   so both render at the same height (border eats into the bordered
+   variant's box, box-sizing: border-box) — see .cover-cta and
+   .occasion-foot .arc3-btn below for the rest of this set. */
+.hero-primary-cta,
+.theme-cta-btn { padding: 15px 24px !important; font-size: 16px !important; }
+.hero-secondary-cta { padding: 13px 24px !important; font-size: 16px !important; }
+
+.hero-score {
+  margin-top: 32px;
+  color: #1f386e !important;
+}
+.hero-score .arc3-score__text { color: inherit !important; }
+.hero-score__link {
+  color: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+}
+.hero-score__link:hover { text-decoration: none; }
+
+.share-row {
+  margin-top: 16px;
+}
+.share-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  padding: 4px 0;
+  cursor: pointer;
+  color: var(--ink);
+  font-size: 15px !important;
+  font-weight: 600;
+  line-height: 1.2;
+}
+.share-btn:hover { color: var(--coral); }
+.share-btn .material-symbols-outlined { color: inherit; }
+
+
+/* =============================================================
+   Generic media block (graceful image degradation)
+   ============================================================= */
+.media {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #e9e1d8 0%, #d8ccbf 100%);
+}
+.media img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 2;
+}
+.media img.failed { display: none; }
+
+/* Two-image card slider: default slide = "being gifted" shot,
+   second slide = product. Desktop swaps on hover; mobile swipes. */
+.media.has-slider .media-track {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  height: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  /* Prevent the swipe from spilling into the product-grid when the
+     track reaches its edge (one image each way) — without this, a
+     swipe that goes past slide 0 or slide 1 immediately scrolls the
+     whole card grid instead. */
+  overscroll-behavior-x: contain;
+}
+.media.has-slider .media-track::-webkit-scrollbar { display: none; }
+.media-slide {
+  flex: 0 0 100%;
+  height: 100%;
+  scroll-snap-align: start;
+  position: relative;
+}
+.media-slide img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.media-dots {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+  display: flex;
+  gap: 6px;
+  padding: 5px 7px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.50);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+.media-dots .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.75);
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+.media-dots .dot.is-active { background: #fff; transform: scale(1.25); }
+/* Product card image arrows — mobile/touch only; injected by JS on !hoverCapable.
+   Tap zone = 40% of card width (full height); visible icon anchored near the edge.
+   Since cards are always 2 slides, one arrow is always hidden so the zones never
+   compete. */
+.media-arrow {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 40%;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+.media-arrow--prev { left: 0; justify-content: flex-start; padding-left: 8px; }
+.media-arrow--next { right: 0; justify-content: flex-end; padding-right: 8px; }
+.media-arrow-icon {
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.50);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  color: #fff;
+  pointer-events: none;
+  flex-shrink: 0;
+}
+.media-arrow-icon svg { width: 13px; height: 13px; }
+@media (hover: hover) and (min-width: 601px) {
+  .media-arrow { display: none; }
+}
+/* Desktop (mouse + roomy viewport): hover drives the swap, so hide the
+   dots and lock manual scroll. Phones and touch devices keep the
+   swipeable track + dots (the base styles above). */
+@media (hover: hover) and (min-width: 601px) {
+  .media.has-slider .media-track { overflow: hidden; }
+  .media.has-slider .media-dots { display: none; }
+}
+.media-fallback {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-align: center;
+  padding: 16px;
+  color: #7c6f60;
+  background: linear-gradient(135deg, #efe7dd 0%, #e0d4c5 100%);
+}
+.media-fallback .ic { font-size: 30px; }
+.media-fallback .lbl {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
+/* =============================================================
+   Section 3 — Recipient picker
+   Background is slightly warmer than the shared --cream token. */
+#picker { background: var(--cream); padding-top: 80px; }
+
+/*
+   ============================================================= */
+.picker-head { text-align: center; margin-bottom: 24px; }
+.picker-head .subcopy { margin-left: auto; margin-right: auto; max-width: 720px; }
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin: 0 0 32px;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--white);
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-pill);
+  padding: 11px 16px;
+  font-size: 16px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--ink);
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+/* ---- Google Material Symbols (icon font) ---- */
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  white-space: nowrap;
+  direction: ltr;
+  font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+.chip-icon { font-size: 24px; flex: 0 0 auto; vertical-align: middle; margin: 0 2px 0 0; }
+.chip-icon--express { font-size: 24px !important; width: 24px !important; height: 24px !important; line-height: 24px !important; color: #000; margin: 0; }
+.express-label { margin-left: 2px; font-style: italic; }
+.chip:has(.chip-icon--express) { gap: 0; }
+.chip.is-active .chip-icon--express { color: inherit !important; }
+.chip:hover { border-color: var(--coral); }
+.chip.is-active {
+  border-color: var(--coral);
+  border-width: 2px;
+  background: var(--coral-tint);
+  color: var(--coral-dark);
+}
+
+/* Recipient chips only — urgency chips and theme tabs also share .chip
+   but keep their own smaller sizing below. */
+#chips .chip { font-size: 16px; }
+
+/* Urgency filter row */
+.urgency-filter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 36px;
+}
+.urgency-label {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--ink);
+  white-space: nowrap;
+}
+.urgency-chips {
+  display: flex;
+  gap: 8px;
+}
+.urgency-chips .chip {
+  padding: 11px 16px;
+  font-size: 16px;
+}
+
+/* Product grid scrollbar — same pattern as .carousel-scrollbar */
+.product-scrollbar {
+  height: 6px;
+  background: rgba(0,0,0,0.10);
+  border-radius: 999px;
+  margin-top: 40px;
+  position: relative;
+  overflow: hidden;
+}
+.product-scrollbar-thumb {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: rgba(0,0,0,0.25);
+  border-radius: 999px;
+}
+
+/* Prev/next arrow controls below a horizontal scroller */
+.scroll-arrows {
+  display: flex;
+  gap: 16px;
+  margin-top: 24px;
+}
+.scroll-arrow {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #f0efec;
+  color: var(--ink);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s ease, opacity 0.15s ease;
+}
+.scroll-arrow svg { width: 22px; height: 22px; }
+.scroll-arrow:hover { background: #e6e3df; }
+.scroll-arrow:disabled { opacity: 0.35; cursor: default; }
+.scroll-arrow:focus-visible { outline: 2px solid var(--coral); outline-offset: 2px; }
+/* Gallery arrows: the gallery only scrolls on mobile (masonry on desktop),
+   so these show on phones only. */
+.scroll-arrows--mobile { display: none; }
+@media (max-width: 600px) {
+  .scroll-arrows--mobile { display: flex; }
+}
+
+/* Product grid empty state */
+.product-grid-empty {
+  flex: 1 0 100%;
+  padding: 56px 0;
+  text-align: center;
+  color: var(--grey);
+  font-size: 15px;
+}
+
+/* Product grid — horizontal scroller so it never grows the page vertically.
+   Bleeds to the right viewport edge so cards scroll off the page edge, and
+   pads all sides (offset by negative margins) so card shadows aren't clipped
+   by the scroll container. */
+.product-grid {
+  display: flex;
+  gap: 24px;
+  overflow-x: auto;
+  /* Full-bleed to BOTH viewport edges so the scroll clip boundaries sit at
+     the invisible page edges — cards scrolling off either side clip there,
+     never mid-page. The horizontal padding insets the first/last card back
+     to the section's content alignment (container max-width 1440, padding 42,
+     so content starts max(42px, 50vw - 678px) from the viewport edge). That
+     inset also gives the hover shadow room on the sides; the top/bottom
+     padding does the same vertically (~52px below for the 0 16px 40px shadow). */
+  padding: 28px max(42px, 50vw - 678px) 52px;
+  margin: -28px calc(50% - 50vw) -52px;
+  scroll-snap-type: x mandatory;
+  scroll-padding-left: max(42px, 50vw - 678px);
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  /* hide the native scrollbar — the peeking card at the right edge is the
+     scroll affordance, and a scrollbar would float 52px below the cards */
+  scrollbar-width: none;
+}
+.product-grid::-webkit-scrollbar { display: none; }
+.product-card {
+  flex: 0 0 262px;
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.product-card:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
+.product-card .media { height: 190px; flex: 0 0 auto; }
+.product-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  padding: 18px 18px 14px;
+}
+/* Sits on the image, not in the body flow, so its presence/absence never
+   shifts the title — every card's title lands in the same place. */
+.badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 4;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: capitalize;
+  padding: 5px 11px;
+  border-radius: var(--radius-pill);
+  background: var(--coral-tint);
+  color: var(--coral-dark);
+}
+.product-title {
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.25;
+  margin-bottom: 8px;
+}
+.product-desc {
+  font-size: 15px;
+  color: var(--grey);
+  margin-bottom: 16px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.product-foot { margin-top: auto; }
+.product-price { margin-bottom: 8px; }
+.product-price .from { display: block; font-size: 15px; font-weight: 600; color: var(--grey-soft); margin-bottom: 2px; }
+.price-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 19px;
+  font-weight: 800;
+}
+/* Gift-category discount, inline with the price it applies to — a
+   discount is a price fact, so it reads right next to the number
+   rather than living in a badge slot above the title. Outlined
+   orange on white to match the live-site discount badge. */
+.promo-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 2px;
+  background: var(--white);
+  border: 1.5px solid var(--sale-orange);
+  color: var(--sale-orange);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+}
+.promo-style-b .promo-tag {
+  border-radius: 999px;
+  background: var(--sale-tint);
+  border: none;
+  color: var(--sale-dark);
+}
+.promo-tag * { pointer-events: none; }
+.promo-tag-icon { width: 24px; height: 24px; flex: none; }
+.promo-tag-dot { fill: var(--white); }
+.promo-style-b .promo-tag-dot { fill: var(--sale-tint); }
+.arrives-icon {
+  font-size: 22px !important;
+  line-height: 1;
+  vertical-align: middle;
+}
+.arrives {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #007377;
+  background: var(--coral-tint);
+  padding: 10px 18px;
+  border-radius: 0 0 var(--radius) var(--radius);
+}
+
+/* Per-product star rating — Trustpilot trust signal */
+.product-rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 8px;
+  margin-bottom: 10px;
+  text-decoration: none;
+}
+/* Scale the star graphic to 20px tall — .rating-count's font-size is untouched */
+.product-rating .arc3-star-rating { height: 20px; }
+.product-rating .arc3-star-rating:before { width: 107px; height: 20px; }
+.rating-count {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--grey);
+  font-variant-numeric: tabular-nums;
+}
+.product-rating:hover .rating-count { color: var(--coral); text-decoration: underline; }
+.product-rating:focus-visible { outline: 2px solid var(--coral); outline-offset: 3px; border-radius: 3px; }
+
+/* =============================================================
+   Section 4 — Occasions carousel
+   ============================================================= */
+.occasions-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 40px;
+}
+
+.carousel {
+  display: flex;
+  gap: 24px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  /* Full-viewport bleed. Container is max 1440px centred with 42px padding,
+     so half container content = (1440-84)/2 = 678px.
+     At wide viewports, shift left by (50vw - 678px) to reach the viewport edge;
+     at narrow viewports clamp so we never exceed the container padding. */
+  width: 100vw;
+  margin-left: min(calc(678px - 50vw), -42px);
+  padding: 6px max(42px, calc(50vw - 678px)) 22px;
+  /* Align snap points with the padding so the first card aligns with the heading */
+  scroll-padding-left: max(42px, calc(50vw - 678px));
+}
+/* Hide native scrollbar — replaced by .carousel-scrollbar inside the container */
+.carousel { scrollbar-width: none; }
+.carousel::-webkit-scrollbar { display: none; }
+
+.carousel-scrollbar {
+  height: 6px;
+  background: rgba(0,0,0,0.10);
+  border-radius: 999px;
+  margin-top: 18px;
+  position: relative;
+  overflow: hidden;
+}
+.carousel-scrollbar-thumb {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: rgba(0,0,0,0.25);
+  border-radius: 999px;
+}
+.occasion-card {
+  flex: 0 0 320px;
+  scroll-snap-align: start;
+  background: var(--white);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+}
+.occasion-card .media { height: 210px; }
+.occasion-body { padding: 20px 22px 24px; display: flex; flex-direction: column; flex: 1; }
+.cat-tag {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 4;
+  display: inline-block;
+  font-size: 15px;
+  font-weight: 700;
+  text-transform: capitalize;
+  padding: 5px 11px;
+  border-radius: var(--radius-pill);
+  background: var(--coral-tint);
+  color: var(--coral-dark);
+}
+.occasion-card h3 { font-size: 19px; font-weight: 800; letter-spacing: -0.01em; margin-bottom: 8px; }
+.occasion-card p { font-size: 15px; color: var(--grey); margin-bottom: 18px; }
+.occasion-foot { margin-top: auto; display: flex; align-items: center; gap: 12px; }
+.occasion-foot .arc3-btn { padding: 15px 24px !important; font-size: 16px !important; }
+
+/* =============================================================
+   Section 5 — How it works
+   ============================================================= */
+.how-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: center;
+}
+.how-heading { font-family: var(--font-display); font-size: 46px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.08; color: var(--white); }
+.steps { margin-top: 8px; }
+.step {
+  display: flex;
+  gap: 22px;
+  padding: 32px 0;
+}
+.step-num {
+  flex: 0 0 auto;
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 17px;
+  border: 2px solid rgba(255,255,255,0.35);
+  color: rgba(255,255,255,0.8);
+}
+.step { cursor: pointer; }
+.step-title { font-size: 22px; font-weight: 700; color: var(--white); }
+.step-desc { font-size: 17px; color: rgba(255,255,255,0.6); margin-top: 6px; }
+.step.is-active .step-num { background: var(--mint); border-color: var(--mint); color: var(--navy); }
+.step.is-active .step-title { color: var(--mint); }
+/* Mobile caption + scrollbar + arrows — hidden on desktop, shown at phone breakpoint. */
+.how-caption { display: none; margin-top: 18px; transition: opacity 0.15s ease; }
+.how-caption.is-changing { opacity: 0; }
+.how-caption-title {
+  display: inline;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--white);
+}
+.how-caption-title::after { content: " \2014\00a0"; font-weight: 700; }
+.how-caption-desc {
+  display: inline;
+  font-size: 17px;
+  font-weight: 400;
+  color: var(--white);
+}
+
+/* Mobile progress scrollbar — timer-driven thumb moves L→R across the 4 steps. */
+.how-scrollbar {
+  display: none;
+  height: 4px;
+  background: rgba(255,255,255,0.18);
+  border-radius: 4px;
+  margin-top: 42px;
+  position: relative;
+  overflow: hidden;
+}
+.how-scrollbar-thumb {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 25%;
+  background: var(--white);
+  border-radius: 4px;
+  transition: left 0.35s ease;
+}
+
+/* Mobile prev/next arrows */
+.how-arrows {
+  display: none;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.how-caption-detail {
+  margin-top: 10px;
+  font-size: 13.5px;
+  color: rgba(255,255,255,0.85);
+  background: rgba(255,255,255,0.08);
+  border-left: 3px solid var(--mint);
+  padding: 8px 12px;
+  border-radius: 8px;
+}
+.how-caption-detail:empty { display: none; }
+
+/* Mobile carousel — hidden on desktop, shown at ≤600px. */
+.how-carousel-wrap { display: none; }
+.how-slide-media {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 20%;
+}
+
+.how-media {
+  border-radius: var(--radius-lg);
+  height: 560px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  background: var(--cream);
+}
+.how-media .media {
+  position: absolute;
+  inset: 0;
+  border-radius: 0;
+}
+/* Video and image both fill the panel; JS toggles .is-hidden to switch between them. */
+.how-media-item {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 20%;
+  z-index: 2;
+  transition: opacity 0.2s ease;
+}
+.how-media-item.is-hidden { opacity: 0; pointer-events: none; }
+.how-media-item.is-fading { opacity: 0; }
+
+/* Auto-rotate progress bar — sits at the bottom of .how-media */
+@keyframes how-timer-fill {
+  from { width: 0%; }
+  to   { width: 100%; }
+}
+.how-timer-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 6px;
+  width: 0%;
+  background: var(--mint);
+  z-index: 10;
+  border-radius: 0;
+}
+.how-timer-bar.is-animating {
+  animation: how-timer-fill 10s linear forwards;
+}
+
+/* =============================================================
+   Section 5a — App download prompt
+   ============================================================= */
+.app-promo {
+  position: relative;
+  overflow: hidden;
+}
+.app-promo-inner {
+  position: relative;
+}
+.app-promo-content {
+}
+.app-promo-phone {
+  display: none;
+}
+.app-phone-mockup {
+  position: relative;
+  width: 380px;
+  height: 620px;
+  background: #1c1c1e;
+  border-radius: 52px;
+  box-shadow: 0 40px 100px rgba(0,0,0,0.35), inset 0 0 0 1.5px rgba(255,255,255,0.08);
+}
+@media (min-width: 900px) {
+  .app-promo-inner {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .app-promo-content {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .app-promo-phone {
+    display: block;
+    flex: 1;
+    min-width: 380px;
+    position: relative;
+    align-self: stretch;
+  }
+  .app-phone-mockup {
+    position: absolute;
+    right: 0;
+    top: -80px;
+  }
+}
+.app-phone-island {
+  position: absolute;
+  top: 19px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 108px;
+  height: 31px;
+  background: #1c1c1e;
+  border-radius: 18px;
+  z-index: 2;
+}
+.app-phone-screen {
+  position: absolute;
+  inset: 14px;
+  background: var(--cream, #fdf6ed);
+  border-radius: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  overflow: hidden;
+}
+.app-qr-card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+#app-qr-code img,
+#app-qr-code canvas {
+  display: block;
+  width: 160px !important;
+  height: 160px !important;
+}
+.app-qr-hint {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--grey);
+  letter-spacing: 0.02em;
+  margin: 0;
+}
+.app-promo-head {
+  text-align: left;
+  margin-bottom: 36px;
+}
+.app-promo-desc {
+  font-size: 16px;
+  color: var(--grey);
+  margin-top: 12px;
+  text-wrap: pretty;
+}
+.app-promo-cards {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+.app-dl-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+.app-dl-qr {
+  flex-direction: row;
+  gap: 14px;
+  background: var(--white);
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius);
+  padding: 14px 20px;
+  box-shadow: var(--shadow);
+  align-items: center;
+}
+.app-dl-qr img {
+  display: block;
+  flex: 0 0 auto;
+}
+.app-promo-qr-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--grey);
+  white-space: nowrap;
+}
+.arc3-app-store-btn {
+  height: 56px;
+  width: auto;
+  display: block;
+}
+.app-promo-trust {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  color: var(--grey);
+  font-size: 15px;
+  margin-top: 16px;
+}
+.app-trust-avatars {
+  display: flex;
+}
+.app-trust-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid var(--white);
+  margin-left: -8px;
+  display: inline-block;
+}
+.app-trust-avatars .app-trust-avatar:first-child { margin-left: 0; }
+.app-trust-label { font-weight: 600; color: var(--ink); }
+.app-trust-divider { color: var(--line); }
+.app-trust-stars { color: #f4a623; letter-spacing: 1px; }
+@media (max-width: 900px) {
+  .app-promo-content {
+    max-width: 100%;
+    text-align: center;
+  }
+  .app-promo-head {
+    text-align: center;
+  }
+  .app-promo-cards {
+    justify-content: center;
+  }
+  .app-promo-trust {
+    justify-content: center;
+  }
+}
+.app-trust-rating { font-weight: 600; color: var(--ink); }
+
+/* =============================================================
+   Section 6 — Customer gallery
+   ============================================================= */
+/* Desktop: masonry columns (unchanged). Mobile turns this into a
+   horizontal scroller — see the phone breakpoint below. */
+.gallery {
+  columns: 3;
+  column-gap: 32px;
+}
+.gallery-item {
+  break-inside: avoid;
+  margin-bottom: 32px;
+  width: 100%;
+  display: block;
+}
+.gallery-img {
+  position: relative;
+}
+.gallery-item.ratio-portrait .gallery-img { aspect-ratio: 9 / 16; }
+.gallery-item.ratio-square   .gallery-img { aspect-ratio: 1 / 1;  }
+/* overflow+radius on .media so the dot/card can escape without clipping */
+.gallery-img .media {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: var(--radius);
+}
+
+.gallery-cap {
+  padding: 16px 0 0;
+}
+.cap-tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--coral);
+  margin-bottom: 8px;
+}
+.cap-text {
+  display: block;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--ink);
+  margin: 0 0 6px;
+}
+.cap-attr {
+  display: block;
+  font-size: 14px;
+  color: var(--grey);
+}
+
+/* Shoppable dot.
+   Placement is per-item: each .gallery-img sets --dot-top / --dot-left
+   (inline) to sit the dot on the product where it reads most clearly.
+   Defaults keep it centred-low if a value is missing. */
+.shop-dot {
+  position: absolute;
+  top: var(--dot-top, 72%);
+  left: var(--dot-left, 50%);
+  transform: translate(-50%, -50%);
+  box-sizing: border-box;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 64px;
+  border: 2px solid rgba(255, 255, 255, 0.48);
+  background-color: rgba(28, 35, 51, 0.48);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  line-height: 0.5;
+  cursor: pointer;
+  z-index: 4;
+  transition: border-color 0.25s ease-in-out;
+}
+.shop-dot-inner {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--white);
+  display: block;
+  pointer-events: none;
+  transition: transform 0.25s ease-in-out;
+}
+/* Inner dot shrinks on dot hover */
+.shop-dot:hover .shop-dot-inner {
+  transform: scale(0.75);
+}
+
+/* Shop card tooltip — opens just above the dot, anchored to the same
+   per-item --dot-top / --dot-left so it stays visually connected. */
+.shop-card {
+  position: absolute;
+  bottom: calc(100% - var(--dot-top, 72%) + 30px);
+  left: var(--dot-left, 50%);
+  transform: translateX(-50%);
+  background: var(--white);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  padding: 14px 16px 12px;
+  min-width: 200px;
+  z-index: 10;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.15s ease, visibility 0.15s ease;
+}
+.shop-card.is-open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+.shop-card-name {
+  font-size: 15px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink);
+  margin-bottom: 3px;
+}
+.shop-card-type {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--grey);
+  margin-bottom: 10px;
+}
+.shop-card-price {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin-bottom: 12px;
+}
+.shop-card-from {
+  font-size: 11px;
+  color: var(--grey);
+  line-height: 1;
+}
+.shop-card-amount {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--ink);
+  line-height: 1;
+}
+.shop-card-cta {
+  display: block;
+  width: 100%;
+  padding: 8px 14px;
+  font-size: 13px;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+/* =============================================================
+   Section 7 — Testimonials
+   ============================================================= */
+/* Horizontal scroller — same full-bleed pattern as .carousel (occasions)
+   and .product-grid, so the row scrolls off the page edge instead of
+   growing the section's height. */
+.reviews {
+  display: flex;
+  gap: 24px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  width: 100vw;
+  margin-left: min(calc(678px - 50vw), -42px);
+  padding: 6px max(42px, calc(50vw - 678px)) 22px;
+  scroll-padding-left: max(42px, calc(50vw - 678px));
+  scrollbar-width: none;
+}
+.reviews::-webkit-scrollbar { display: none; }
+.review-card {
+  flex: 0 0 340px;
+  scroll-snap-align: start;
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 30px 28px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+}
+.review-card .arc3-star-rating { margin-bottom: 16px; }
+.review-title { font-size: 19px; font-weight: 700; margin-bottom: 10px; }
+.review-quote {
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--ink);
+  margin-bottom: 22px;
+  flex: 1;
+  overflow: hidden;
+}
+.review-see-more {
+  display: inline;
+  font-size: 16px;
+  font-weight: normal;
+  color: #007377;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: none;
+}
+.review-see-more:hover { text-decoration: underline; text-underline-offset: 2px; }
+.review-see-more[hidden] { display: none !important; }
+.review-attr { margin-top: auto; }
+
+/* Review modal */
+.review-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 9000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.review-modal-overlay[hidden] { display: none !important; }
+.review-modal {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 32px 30px 28px;
+  max-width: 480px;
+  width: 100%;
+  position: relative;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+}
+.review-modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--grey);
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.review-modal-close:hover { color: var(--ink); }
+.review-modal-title { font-size: 18px; font-weight: 700; margin: 12px 0 10px; }
+.review-modal-body { font-size: 16px; line-height: 1.65; color: var(--ink); margin-bottom: 20px; }
+.review-modal-attr { font-size: 14px; color: var(--grey); display: flex; flex-direction: column; gap: 2px; }
+.review-modal-attr strong { color: var(--ink); font-weight: 700; font-size: 15px; }
+.review-name { font-weight: 700; font-size: 15px; }
+.review-meta { font-size: 14px; color: var(--grey); }
+.reviews-score { margin-top: 18px; color: #1f386e; }
+.reviews-score .arc3-score__text { color: inherit !important; }
+
+/* CTA below the reviews carousel — left-aligned. */
+.reviews-cta--top {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 24px;
+}
+
+/* Floating "Find a gift" button — exploratory alternative to the
+   in-section CTA above, always reachable while scrolling. Hidden
+   until the user has scrolled past the hero; toggled via
+   .is-visible by initFloatingGiftButton() in app.js. */
+.floating-gift-btn {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 22px;
+  border-radius: var(--radius-pill);
+  background: var(--white);
+  border: 2px solid var(--coral);
+  color: var(--coral);
+  font-size: 15px;
+  font-weight: 700;
+  box-shadow: var(--shadow);
+  opacity: 0;
+  transform: translateY(12px);
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease, background 0.15s ease, color 0.15s ease;
+}
+.floating-gift-btn:hover { background: var(--coral-tint); }
+.floating-gift-btn.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+@media (max-width: 574px) {
+  .floating-gift-btn { right: 16px; bottom: 16px; padding: 12px 18px; font-size: 14px; }
+}
+
+/* =============================================================
+   Section 7a — Gift highlights strip (mug/jigsaw/block/magnets/
+   cushion — the S1 gift-category range). Thin cards in a 3-column
+   grid — 4 cards, one row on desktop. Stacks to a single column on
+   mobile.
+   ============================================================= */
+.gift-highlight-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+.gift-highlight-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+.ghc-media {
+  width: 100%;
+  height: 180px;
+  flex: 0 0 auto;
+}
+.ghc-body {
+  padding: 16px 18px 20px;
+}
+.ghc-media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ghc-body h3 { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+.ghc-body p {
+  font-size: 15px;
+  line-height: 1.4;
+  color: var(--grey);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* =============================================================
+   Section 8 — Why Photobox trust grid
+   ============================================================= */
+.trust-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 26px;
+}
+.trust-tile {
+  background: rgba(255,255,255,0.7);
+  border: 1px solid rgba(10,106,92,0.16);
+  border-radius: var(--radius);
+  padding: 30px 28px;
+  text-align: left;
+}
+.trust-badge {
+  width: 58px; height: 58px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px;
+  margin-bottom: 18px;
+  background: var(--coral-tint);
+}
+.trust-badge.green { background: var(--green-tint); }
+.trust-tile h3 {
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 9px;
+}
+.trust-tile p { font-size: 14.5px; color: var(--grey); margin-bottom: 12px; }
+.trust-link { font-weight: 700; font-size: 14px; color: var(--coral); }
+.trust-link:hover { color: var(--coral-dark); }
+
+/* =============================================================
+   User-testing blur — obscures specific images so test
+   participants focus on layout/copy, not photo content.
+   Excluded: hero video, gallery ("Made by customers like you"),
+   and any curated real photo marked .is-real.
+   ============================================================= */
+.occasion-card .media img:not(.is-real),
+.how-media img:not(.is-real),
+#picker .media img:not(.is-real) {
+  filter: blur(18px);
+  transform: scale(1.08); /* prevents white fringe at edges */
+}
+
+/* =============================================================
+   Section — Themed cover parallax
+   Two rows of placeholder covers; top drifts left, bottom drifts
+   right as the page scrolls (scroll-linked, set via --shift in JS).
+   ============================================================= */
+.covers-section {
+  position: relative;  /* anchors the fade-out clones used during tab switches */
+  overflow-x: hidden; /* hide the off-screen ends of each row */
+}
+.covers-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+@media (min-width: 601px) {
+  .covers-rows { cursor: grab; }
+  .covers-rows:active { cursor: grabbing; }
+  .cover-block { cursor: inherit; }
+}
+.covers-row {
+  position: relative;
+  left: 50%;                 /* centre the over-wide row so it bleeds both edges */
+  width: max-content;
+  display: flex;
+  gap: 24px;
+  will-change: transform;
+}
+/* Base centring (-50%) + per-row parallax delta (--shift, set by JS).
+   Bottom row carries a static offset so its columns don't line up
+   with the top row. */
+.covers-row-top {
+  transform: translateX(calc(-50% + var(--shift, 0px)));
+}
+.covers-row-bottom {
+  transform: translateX(calc(-50% + 160px + var(--shift, 0px)));
+}
+.covers-rows[data-active-product="mug"] .covers-row-bottom {
+  transform: translateX(calc(-50% + 270px + var(--shift, 0px)));
+}
+.covers-rows[data-active-product="card"] .covers-row { gap: 80px; }
+.covers-rows[data-active-product="card"] { gap: 48px; }
+.covers-rows[data-active-product="card"] .covers-row-bottom {
+  transform: translateX(calc(-50% + 380px + var(--shift, 0px)));
+}
+.cover-block {
+  flex: 0 0 auto;            /* width follows the image; never shrinks */
+  height: 300px;             /* fixed row height — width grows with wider images */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  text-decoration: none;
+  opacity: 1;
+  transition: opacity 0.2s ease, transform 0.25s ease;
+}
+/* .cover-block.is-fading is no longer used — whole-wrapper crossfade handles transitions */
+.cover-block.is-filtered-out { display: none; }
+.cover-block[data-product="mug"] { height: 300px; }
+.covers-rows[data-active-product="mug"] .covers-row { gap: 0; }
+.cover-block[data-product="mug"] img { transform: scale(1.3); }
+.cover-block img {
+  height: 100%;              /* fill the fixed height */
+  width: auto;               /* wider images make the block wider, height unchanged */
+  display: block;
+}
+.cover-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.55) 100%);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+.cover-cta {
+  padding: 13px 24px !important;
+  font-size: 16px !important;
+  background: var(--white) !important;
+  box-shadow: var(--shadow-sm);
+  transform: translateY(4px);
+  transition: transform 0.25s ease;
+}
+@media (hover: hover) {
+  .cover-block:hover,
+  .cover-block:focus-visible { transform: scale(0.96); z-index: 1; }
+}
+.cover-block:focus-visible {
+  outline: 2px solid var(--coral);
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cover-block:hover,
+  .cover-block:focus-visible { transform: none; }
+}
+/* Respect reduced-motion: hold the rows still. */
+@media (prefers-reduced-motion: reduce) {
+  .covers-row-top    { transform: translateX(-50%); }
+  .covers-row-bottom { transform: translateX(calc(-50% + 160px)); }
+}
+
+
+/* Theme filter tabs */
+.theme-tabs {
+  display: flex;
+  justify-content: flex-start;
+  gap: 10px;
+  margin-bottom: 40px;
+}
+.theme-tab { cursor: pointer; }
+
+/* CTA below the scroller */
+.theme-cta {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 40px;
+}
+
+/* =============================================================
+   INTERNAL: version switcher (dev/stakeholder tool, not customer UI)
+   Collapsed pill expands into a small dark popover. Links across the
+   frozen version folders, preserving the current query string.
+   ============================================================= */
+.variant-switcher {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  z-index: 2000;
+  font-family: "SFMono-Regular", ui-monospace, Menlo, Consolas, monospace;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.variant-switcher.is-hidden { display: none; }
+.proto-hint {
+  font-size: 10px;
+  color: #79828f;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  background: #11151c;
+  border: 1px solid #2a3340;
+  border-radius: 999px;
+  padding: 5px 10px;
+  pointer-events: none;
+  opacity: 0.85;
+}
+.variant-switcher.is-open .proto-hint { display: none; }
+.proto-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #11151c;
+  color: #ffd166;
+  border: 1px solid #2a3340;
+  border-radius: 999px;
+  padding: 8px 14px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.32);
+  transition: border-color 0.15s ease, transform 0.12s ease, opacity 0.14s ease;
+}
+.proto-toggle:hover { border-color: #4a5a6e; }
+.proto-toggle:active { transform: translateY(1px); }
+.proto-toggle-ic { font-size: 13px; }
+.proto-summary { color: #fff; font-variant-numeric: tabular-nums; }
+.proto-caret { color: #79828f; font-size: 10px; transition: transform 0.15s ease; }
+.variant-switcher.is-open .proto-toggle { opacity: 0; transform: scale(0.94); pointer-events: none; }
+.proto-panel {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 260px;
+  max-width: calc(100vw - 24px);
+  background: #11151c;
+  color: #fff;
+  border: 1px solid #2a3340;
+  border-radius: 14px;
+  padding: 14px;
+  box-shadow: 0 18px 48px rgba(0,0,0,0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(8px) scale(0.94);
+  transform-origin: bottom right;
+  pointer-events: none;
+  transition: opacity 0.18s ease, transform 0.18s ease, visibility 0s linear 0.18s;
+}
+.variant-switcher.is-open .proto-panel {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  pointer-events: auto;
+  transition: opacity 0.18s ease, transform 0.18s ease, visibility 0s;
+}
+.proto-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.proto-close {
+  background: none; border: none; color: #79828f; cursor: pointer;
+  font-size: 13px; line-height: 1; padding: 2px 4px; border-radius: 4px;
+}
+.proto-close:hover { color: #fff; }
+.proto-group { display: flex; flex-direction: column; gap: 6px; }
+.proto-glabel { font-size: 9.5px; letter-spacing: 0.1em; text-transform: uppercase; color: #79828f; }
+.proto-toggle:focus-visible, .proto-close:focus-visible, .ver-btn:focus-visible {
+  outline: 2px solid #ffd166; outline-offset: 2px;
+}
+.vs-flag {
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #ffd166;
+  white-space: nowrap;
+}
+.ver-switcher { display: flex; gap: 6px; }
+.ver-btn {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+  flex: 1 1 0;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  color: #c4ccd6;
+  background: #1b212b;
+  border: 1px solid #2a3340;
+  border-radius: 7px;
+  padding: 6px 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+.ver-btn small { font-size: 9.5px; font-weight: 500; color: #79828f; letter-spacing: 0.02em; }
+.ver-btn:hover:not(:disabled) { border-color: #3b4756; color: #fff; }
+.ver-btn.is-active { background: #ffd166; border-color: #ffd166; color: #1a1a1a; cursor: default; }
+.ver-btn.is-active small { color: #5a4a16; }
+.proto-copy-btn { flex-direction: row; gap: 6px; font-size: 11px; font-weight: 600; letter-spacing: 0.04em; }
+@media (prefers-reduced-motion: reduce) {
+  .proto-panel, .variant-switcher.is-open .proto-panel,
+  .proto-toggle, .variant-switcher.is-open .proto-toggle { transition: none; }
+  .proto-panel, .variant-switcher.is-open .proto-panel { transform: none; }
+}
+
+/* =============================================================
+   Responsive — tablet & mobile
+   Base styles above are authored for desktop; these breakpoints
+   adapt the layout down to phones: multi-column sections stack,
+   the nav condenses, fixed heights/paddings shrink, and rows that
+   overflowed now wrap or scroll.
+   ============================================================= */
+
+/* =============================================================
+   ARC-3 component fixes — newsletter bar, FAQ accordion, footer
+   ============================================================= */
+/* arc.css gives the bar's <p> a top-only margin (10px 0 0), which
+   skews it off-centre against the form next to it even though the
+   bar itself is align-items:center — the asymmetric margin is what
+   flexbox centres, not the text inside it. */
+.arc3-newsletter-bar p {
+  margin: 0 !important;
+}
+
+/* The icons inside .arc3-footer__social-icons are float:left with no
+   clearfix on the container, and the <a> wrapping each one is
+   display:inline (so it collapses to 0x0 around a floated child) —
+   the icons escape the flow entirely instead of sitting in a row
+   next to each other. Flex overrides float on its children outright,
+   so this both re-aligns and centres them in one fix. !important
+   because arc.css loads after this file (same specificity, later
+   source order wins otherwise). */
+.arc3-footer__social-icons {
+  display: flex !important;
+  align-items: center;
+  gap: 12px;
+}
+
+/* .arc3-payment images are display:block by default, so six logos
+   stack one per line instead of running in a row. */
+.footer-payment-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+/* .arc3-accordion__title sizes itself as if it always shares the row
+   with a subtitle (arc.css splits the row's width between them) — with
+   no subtitle in our markup, the title keeps that same narrow share
+   and wraps well before it needs to. Letting it grow to fill the row
+   fixes that. */
+.arc3-accordion__title {
+  flex: 1 1 auto !important;
+  width: auto !important;
+}
+
+/* ---- Tablet / small laptop ---- */
+@media (max-width: 900px) {
+  .container { padding: 0 28px; }
+  .trust-grid { grid-template-columns: repeat(2, 1fr); }
+  .gift-highlight-row { grid-template-columns: repeat(2, 1fr); }
+  .ghc-media { height: 150px; }
+
+  /* How it works: switch to mobile carousel at tablet width */
+  .how-grid { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .steps { display: none; }
+  .how-media { height: auto; margin-top: 42px; overflow: visible; background: none; box-shadow: none; border-radius: 0; }
+  .how-timer-bar { display: none; }
+  .how-desktop-media { display: none; }
+  .how-carousel-wrap {
+    display: block;
+    position: relative;
+    left: -28px;
+    width: calc(100% + 56px);
+    overflow-x: scroll;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    scroll-padding-left: 28px;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .how-carousel-wrap::-webkit-scrollbar { display: none; }
+  .how-carousel-track {
+    display: flex;
+    gap: 24px;
+    padding: 0 28px;
+    width: max-content;
+  }
+  .how-slide {
+    flex: 0 0 80vw;
+    display: flex;
+    flex-direction: column;
+    scroll-snap-align: start;
+  }
+  .how-slide-inner {
+    flex: 0 0 auto;
+    aspect-ratio: 1/1;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    position: relative;
+    background: var(--cream);
+    box-shadow: var(--shadow);
+  }
+  .how-slide .how-caption { display: block; flex: 0 0 auto; margin-top: 14px; }
+  .how-scrollbar { display: block; }
+  .how-arrows { display: flex; }
+}
+
+/* ---- Phone ---- */
+/* Nav switches to mobile menu as soon as the last desktop nav item
+   would wrap — measured at 802px (logo 208 + utility icons/links 594).
+   810px gives a few pixels of breathing room.
+   ARC-3's own breakpoint is lower (~600px); these overrides raise it. */
+@media (max-width: 810px) {
+  /* Force ARC-3's hamburger button on and hide the desktop rows */
+  .arc3-menu__bar__mobile-btn { display: inline-flex !important; }
+  .arc3-menu__main            { display: none !important; }
+  .arc3-menu__bar__nav        { display: none !important; }
+
+  /* Dead-code selectors below (elements not in DOM) kept for reference */
+  .nav-utility, .nav-cats { display: none; }
+  /* No fixed height: the MENU button's own 8px margin defines the bar's
+     height, so its top/bottom spacing stays equal to its 8px left margin.
+     A fixed height would squeeze the vertical margin and break that. */
+  .nav-mobile-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 8px 0 0;
+    border-bottom: 1px solid var(--line);
+  }
+  /* Matches the real photobox.co.uk mobile "MENU" button
+     (.arc3-menu__bar__mobile-btn): 2px border, 3px radius, 600 weight,
+     8px/16px padding, 8px margin on all sides. */
+  .mobile-menu-btn {
+    display: inline-flex;
+    align-items: center;
+    border: 2px solid var(--coral);
+    border-radius: 3px;
+    padding: 8px 16px;
+    margin: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--coral);
+    background: var(--white);
+  }
+  .mobile-menu-btn:active { transform: translateY(1px); }
+  .nav-mobile-bar .logo-img { height: 26px; }
+  .mobile-nav-icons { display: flex; align-items: center; gap: 16px; }
+  .mobile-nav-icons a { display: inline-flex; color: var(--coral); }
+  .mobile-nav-icons svg { width: 23px; height: 23px; }
+
+  /* Drawer: slides in from the left; backdrop dims the page behind it. */
+  .mobile-menu-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 199;
+    background: rgba(10, 12, 20, 0.4);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0s linear 0.2s;
+  }
+  .mobile-menu-panel {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 200;
+    width: min(82vw, 340px);
+    background: var(--white);
+    box-shadow: var(--shadow);
+    transform: translateX(-100%);
+    transition: transform 0.22s ease;
+    overflow-y: auto;
+  }
+  .mobile-menu-backdrop.is-open {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.2s ease, visibility 0s;
+  }
+  .mobile-menu-panel.is-open { transform: none; }
+  .mobile-menu-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--line);
+  }
+  .mobile-menu-head .logo-img { height: 26px; }
+  .mobile-menu-close {
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 16px;
+    color: var(--grey);
+    background: var(--cream-2);
+  }
+  .mobile-menu-links, .mobile-menu-utility {
+    display: flex;
+    flex-direction: column;
+    padding: 8px 0;
+  }
+  /* Top level: either an accordion item (category with sub-links,
+     e.g. Photo books, Gifts) or a plain link cloned as-is (Wedding —
+     it has no dropdown on desktop either). Built by buildMobileMenu()
+     in js/app.js, which clones the real desktop nav — see the comment
+     above #mobile-menu-links in index.html. */
+  .mobile-menu-links > a {
+    padding: 13px 20px;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--coral);
+    border-bottom: 1px solid var(--line);
+  }
+  .mobile-acc-item { border-bottom: 1px solid var(--line); }
+  .mobile-acc-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 13px 20px;
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--coral);
+    background: none;
+    border: none;
+    text-align: left;
+  }
+  .mobile-acc-trigger .chev { width: 14px; height: 14px; flex-shrink: 0; transition: transform 0.15s ease; }
+  .mobile-acc-trigger.is-open .chev { transform: rotate(180deg); }
+  .mobile-acc-panel {
+    display: none;
+    padding: 0 20px 14px 32px;
+    background: var(--cream-2);
+  }
+  .mobile-acc-panel.is-open { display: block; }
+  .mobile-acc-panel ul { list-style: none; }
+  .mobile-acc-panel a {
+    display: block;
+    padding: 10px 0;
+    font-size: 14.5px;
+    font-weight: 500;
+    color: var(--ink);
+  }
+  /* Gifts' mega-menu columns stack instead of sitting side by side. */
+  .mobile-acc-panel .nav-col { min-width: 0; }
+  .mobile-acc-panel .nav-col + .nav-col {
+    border-left: none;
+    border-top: 1px solid var(--line);
+    margin-top: 6px;
+    padding-top: 10px;
+  }
+  .mobile-acc-panel .nav-col-heading { padding: 10px 0 2px; }
+  /* "All photo products" is a catch-all action, not another product —
+     .nav-view-all a's green already has the same specificity as the
+     generic ".mobile-acc-panel a" (black) rule above, so without this
+     the LATER rule in the file (black) would win regardless of which
+     is "more specific". Bump specificity here to keep it green. */
+  .mobile-acc-panel .nav-view-all a { color: var(--coral); }
+
+  /* Utility links continue the same list as the categories above — no
+     divider band and no gap, so Wedding runs straight into Blog. */
+  .mobile-menu-links { padding-bottom: 0; }
+  .mobile-menu-utility { border-top: none; padding-top: 0; }
+  .mobile-menu-utility a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 13px 20px;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--grey);
+    border-bottom: 1px solid var(--line);
+  }
+  .mobile-menu-utility a svg { width: 19px; height: 19px; flex-shrink: 0; }
+  @media (prefers-reduced-motion: reduce) {
+    .mobile-menu-panel, .mobile-menu-backdrop { transition: none; }
+  }
+}
+
+/* Tablet (601–900px): container narrows to 28px padding, so the full-bleed
+   carousel formula (margin-left: -42px) overshoots by 14px and leaves a
+   14px gap on the right. Override to match the actual container padding. */
+@media (min-width: 601px) and (max-width: 900px) {
+  .carousel {
+    margin-left: -28px;
+    padding-left: 28px;
+    padding-right: 28px;
+    scroll-padding-left: 28px;
+  }
+  .reviews {
+    margin-left: -28px;
+    padding-left: 28px;
+    padding-right: 28px;
+    scroll-padding-left: 28px;
+  }
+}
+
+@media (max-width: 600px) {
+  .container { padding: 0 20px; }
+  .section { padding: 112px 0; }
+  .section-head { margin-bottom: 32px; }
+  .heading { font-size: 34px; }
+  .how-heading { font-size: 34px; }
+
+  /* Gift highlights: stay 2-col on mobile with a shorter image */
+  .gift-highlight-row { gap: 12px; }
+  .ghc-media { height: 120px; }
+  .ghc-body { padding: 12px 14px 16px; }
+
+  /* How it works: re-apply 20px bleed offsets (tablet block uses 28px) */
+  .how-carousel-wrap { left: -20px; width: calc(100% + 40px); scroll-padding-left: 20px; }
+  .how-carousel-track { padding: 0 20px; }
+  .hero h1 { font-size: 34px; }
+
+  /* Hero: collapse the side-by-side grid to a stacked layout and show the
+     full image un-cropped (contain) rather than filling a fixed height. */
+  .hero-wrap .hero.arc3-image-and-panel {
+    grid-template-columns: 1fr !important;
+    grid-template-rows: auto auto;
+  }
+  .hero-wrap .hero .arc3-panel  { grid-column: 1 / 2 !important; grid-row: 2; }
+  .hero-wrap .hero .arc3-banner-image,
+  .hero .arc3-banner-image       { grid-column: 1 / 2 !important; grid-row: 1; min-height: 0 !important; height: calc(100vw * 9 / 16) !important; position: relative; }
+  .hero-media {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 70% 35%;
+  }
+
+  /* Urgency filter: wrap so label jumps above chips when space is tight */
+  .urgency-filter { flex-wrap: wrap; justify-content: center; }
+
+  /* Recipient chips ("Who's this gift for?"): single-line side-scroller
+     instead of wrapping to several rows — same pattern as the category
+     nav strip above. Bleeds full-width past .container's 20px gutter and
+     re-applies that gutter as its own padding, so the strip uses the full
+     viewport width to scroll in (rather than being inset an extra 20px on
+     each side) and the last chip gets real trailing space when scrolled to
+     the end — padding on the *scrolling* element, not a clipped ancestor. */
+  .chips {
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    overflow-x: auto;
+    margin-left: -20px;
+    margin-right: -20px;
+    margin-bottom: 36px;
+    padding: 0 20px 4px;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .chips::-webkit-scrollbar { display: none; }
+  .chip { flex: 0 0 auto; }
+
+  /* Theme filter tabs: same full-bleed side-scroller as recipient chips */
+  .theme-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    margin-left: -20px;
+    margin-right: -20px;
+    padding: 0 20px 4px;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 24px;
+  }
+  .theme-tabs::-webkit-scrollbar { display: none; }
+
+  /* Single-column stacks */
+  .trust-grid { grid-template-columns: 1fr; }
+
+  /* Customer gallery: horizontal scroller on mobile. All items share
+     one width; height follows each item's ratio (so it varies). */
+  .gallery {
+    columns: auto;
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    padding: 40px 0 14px;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .gallery::-webkit-scrollbar { display: none; }
+  .gallery-item {
+    flex: 0 0 78%;
+    margin-bottom: 0;
+    scroll-snap-align: start;
+  }
+
+  /* Themed covers on mobile: same parallax rows as desktop, but
+     touch-draggable horizontally — JS mirrors each row in the opposite
+     direction. No native scroll container: JS owns the transform. */
+  .cover-block { height: 180px; }
+  .cover-block[data-product="mug"] { height: 180px; }
+  /* No hover on touch — tap opens the theme directly, so the overlay/CTA
+     reveal (built for desktop hover) just stays hidden here. */
+
+  /* Internal prototype switcher sits a little tighter */
+  .variant-switcher { bottom: 12px; right: 12px; }
+
+  /* ── Mobile margin alignment ────────────────────────────────────────
+     All page content uses 20px gutters (.container padding: 0 20px above).
+     These three overrides bring the ARC-3 header and full-bleed carousels
+     into the same 20px grid. */
+
+  /* .hero-copy uses padding: … max(16px,…) !important which clamps to 16px
+     on a 375px viewport — override to match the 20px content gutter. */
+  .hero-copy {
+    padding-top: 48px !important;
+    padding-bottom: 48px !important;
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
+
+  /* ARC-3 hamburger button sits at left:0 + margin:8px = 8px from left.
+     Override margin-left so the button aligns with the 20px content gutter. */
+  .arc3-menu__bar__mobile-btn {
+    margin-left: 20px;
+  }
+
+  /* Full-bleed carousels use padding-left: max(16px, …) — on mobile the
+     max() always resolves to 16px, misaligning the first card by 4px.
+     The margin-left: min(…, -16px) also over-bleeds by 4px at 375px.
+     Fix both to match the 20px container gutter. */
+  .carousel {
+    margin-left: -20px;
+    padding-left: 20px;
+    padding-right: 20px;
+    scroll-padding-left: 20px;
+  }
+  .reviews {
+    margin-left: -20px;
+    padding-left: 20px;
+    padding-right: 20px;
+    scroll-padding-left: 20px;
+  }
+  .product-grid {
+    padding-left: 20px;
+    padding-right: 20px;
+    scroll-padding-left: 20px;
+  }
+}
